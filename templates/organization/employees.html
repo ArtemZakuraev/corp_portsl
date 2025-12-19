@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Сотрудники — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Сотрудники
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">Сотрудники</h1>
+<p class="cp-page-subtitle">
+    Каталог сотрудников компании с возможностью поиска по ФИО, email, департаменту, отделу и рабочему телефону.
+</p>
+
+<section class="cp-card">
+    <header class="cp-card-header">
+        <div>
+            <div class="cp-card-title">Список сотрудников</div>
+            <div class="cp-card-subtitle">Отображаются все активные пользователи портала</div>
+        </div>
+        <form method="get" class="cp-search-form">
+            <input
+                type="text"
+                name="q"
+                placeholder="Поиск по ФИО, email, отделу или телефону"
+                value="{{ query }}"
+            >
+            {% if query %}
+                <a href="{% url 'employees' %}" class="cp-link-muted" style="margin-left: 8px;">Сбросить</a>
+            {% endif %}
+            <button type="submit">Найти</button>
+        </form>
+    </header>
+
+    <div class="cp-table-wrapper">
+        <table class="cp-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Фамилия Имя Отчество</th>
+                    <th>Email</th>
+                    <th>Телефон рабочий</th>
+                    <th>Департамент</th>
+                    <th>Отдел</th>
+                    <th>Руководитель</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in employees %}
+                    {% with profile=user.profile %}
+                    <tr>
+                        <td>
+                            {% if profile.photo %}
+                                <img src="{{ profile.photo.url }}" alt="Фото" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
+                            {% else %}
+                                <div style="width:40px;height:40px;border-radius:50%;background:#ddd;display:flex;align-items:center;justify-content:center;font-size:12px;color:#777;">
+                                    {{ profile.first_name|default:user.first_name|first }}{{ profile.last_name|default:user.last_name|first }}
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'employees' %}?id={{ user.id }}" style="text-decoration: none; color: inherit;">
+                                {% if profile.last_name or profile.first_name or profile.middle_name %}
+                                    {{ profile.last_name }} {{ profile.first_name }} {{ profile.middle_name }}
+                                {% else %}
+                                    {{ user.last_name }} {{ user.first_name }}
+                                {% endif %}
+                            </a>
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if profile.phone_internal %}
+                                {{ profile.phone_internal }}
+                            {% else %}
+                                <span class="cp-link-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if profile.department %}
+                                {{ profile.department }}
+                            {% else %}
+                                <span class="cp-link-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if profile.unit %}
+                                {{ profile.unit }}
+                            {% else %}
+                                <span class="cp-link-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if profile.manager %}
+                                {{ profile.manager.get_full_name|default:profile.manager.username }}
+                            {% else %}
+                                <span class="cp-link-muted">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endwith %}
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="cp-link-muted">
+                            Сотрудники не найдены. Проверьте критерии поиска или убедитесь, что пользователи зарегистрированы в системе.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+

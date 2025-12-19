@@ -1,0 +1,428 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Чаты — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Коммуникации / Чаты
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">Чаты</h1>
+<p class="cp-page-subtitle">
+    Корпоративные чаты для оперативной коммуникации между сотрудниками и командами.
+</p>
+
+{% if error_message %}
+    <div class="cp-card" style="background: #fee; border-color: #fcc; margin-bottom: 16px;">
+        <p style="color: #c33; margin: 0; white-space: pre-line;">{{ error_message }}</p>
+    </div>
+{% endif %}
+
+{% if not mattermost_configured %}
+    <section class="cp-card">
+        <div class="cp-card-content">
+            <h3 class="cp-card-title">Сервер Mattermost не настроен</h3>
+            <p class="cp-card-subtitle">
+                Администратор должен настроить сервер Mattermost в разделе "Настройки портала".
+            </p>
+        </div>
+    </section>
+{% elif not user_configured %}
+    <section class="cp-card">
+        <div class="cp-card-content">
+            <h3 class="cp-card-title">Настройте авторизацию Mattermost</h3>
+            <p class="cp-card-subtitle">
+                Для использования чатов необходимо указать логин и пароль Mattermost в вашем профиле.
+            </p>
+            <a href="{% url 'profile' %}" class="cp-button" style="margin-top: 16px;">
+                Перейти в профиль
+            </a>
+        </div>
+    </section>
+{% else %}
+    <div style="display: grid; grid-template-columns: 280px 1fr; gap: 16px; height: calc(100vh - 250px); min-height: 600px;">
+        <!-- Боковая панель с каналами -->
+        <div class="cp-card" style="padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+            <!-- Переключатель разделов -->
+            <div style="display: flex; border-bottom: 1px solid var(--cp-border-light); flex-shrink: 0;">
+                <button id="tab-channels" class="chat-tab active" onclick="switchTab('channels')" style="flex: 1; padding: 10px 6px; border: none; background: transparent; cursor: pointer; border-bottom: 2px solid #4caf50; font-weight: 600; font-size: 13px; white-space: nowrap; overflow: visible; text-align: center; min-width: 0; color: #4caf50;">
+                    Каналы
+                </button>
+                <button id="tab-direct" class="chat-tab" onclick="switchTab('direct')" style="flex: 1; padding: 10px 6px; border: none; background: transparent; cursor: pointer; border-bottom: 2px solid transparent; font-weight: 600; font-size: 13px; white-space: nowrap; overflow: visible; text-align: center; min-width: 0;">
+                    Личные сообщения
+                </button>
+            </div>
+            
+            <!-- Содержимое вкладки "Каналы" -->
+            <div id="content-channels" class="chat-tab-content" style="flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 0; min-height: 0;">
+                {% if teams %}
+                    {% for team in teams %}
+                        <div style="padding: 8px 16px; font-weight: 600; color: var(--cp-text-muted); font-size: 12px; text-transform: uppercase;">
+                            {{ team.display_name|default:team.name }}
+                        </div>
+                        {% for channel in regular_channels %}
+                            {% if channel.team_id == team.id %}
+                                <a href="?channel={{ channel.id }}" 
+                                   class="cp-menu-link {% if selected_channel and selected_channel.id == channel.id %}active{% endif %}"
+                                   style="display: block; padding: 8px 16px; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative;">
+                                    <i class="fas fa-{% if channel.type == 'P' %}lock{% else %}hashtag{% endif %}"></i>
+                                    <span style="font-weight: {% if channel.unread_count and channel.unread_count > 0 %}700{% else %}400{% endif %};">
+                                        {{ channel.display_name|default:channel.name }}
+                                    </span>
+                                    {% if channel.unread_count and channel.unread_count > 0 %}
+                                        <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; border-radius: 50%; background: #f44336; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600;">
+                                            {% if channel.unread_count > 99 %}99+{% else %}{{ channel.unread_count }}{% endif %}
+                                        </span>
+                                    {% endif %}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                {% elif regular_channels %}
+                    {% for channel in regular_channels %}
+                        <a href="?channel={{ channel.id }}" 
+                           class="cp-menu-link {% if selected_channel and selected_channel.id == channel.id %}active{% endif %}"
+                           style="display: block; padding: 8px 16px; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative;">
+                            <i class="fas fa-{% if channel.type == 'P' %}lock{% else %}hashtag{% endif %}"></i>
+                            <span style="font-weight: {% if channel.unread_count and channel.unread_count > 0 %}700{% else %}400{% endif %};">
+                                {{ channel.display_name|default:channel.name }}
+                            </span>
+                            {% if channel.unread_count and channel.unread_count > 0 %}
+                                <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; border-radius: 50%; background: #f44336; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600;">
+                                    {% if channel.unread_count > 99 %}99+{% else %}{{ channel.unread_count }}{% endif %}
+                                </span>
+                            {% endif %}
+                        </a>
+                    {% endfor %}
+                {% else %}
+                    <div style="padding: 16px; color: var(--cp-text-muted); text-align: center;">
+                        Нет доступных каналов
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Содержимое вкладки "Личные сообщения" -->
+            <div id="content-direct" class="chat-tab-content" style="display: none; flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 0; min-height: 0;">
+                <!-- Кнопка создания нового чата -->
+                <div style="padding: 8px 16px;">
+                    <button onclick="openCreateChatModal()" class="cp-button" style="width: 100%; padding: 10px; font-size: 14px;">
+                        <i class="fas fa-plus"></i> Новый чат
+                    </button>
+                </div>
+                
+                <!-- Список личных сообщений -->
+                {% if direct_channels %}
+                    {% for channel in direct_channels %}
+                        <a href="?channel={{ channel.id }}" 
+                           class="cp-menu-link {% if selected_channel and selected_channel.id == channel.id %}active{% endif %}"
+                           style="display: block; padding: 12px 16px; text-decoration: none; border-bottom: 1px solid var(--cp-border-light); position: relative;">
+                            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                                <div style="position: relative; flex-shrink: 0;">
+                                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--cp-gradient-primary); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px;">
+                                        {{ channel.display_name|first|upper|default:"?" }}
+                                    </div>
+                                    {% if channel.unread_count and channel.unread_count > 0 %}
+                                        <div style="position: absolute; top: -4px; right: -4px; width: 20px; height: 20px; border-radius: 50%; background: #f44336; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; border: 2px solid var(--cp-bg);">
+                                            {% if channel.unread_count > 99 %}99+{% else %}{{ channel.unread_count }}{% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                        <div style="font-weight: {% if channel.unread_count and channel.unread_count > 0 %}700{% else %}600{% endif %}; font-size: 14px; color: var(--cp-text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            {{ channel.display_name|default:channel.name }}
+                                        </div>
+                                        {% if channel.last_post and channel.last_post.create_at %}
+                                            <span style="font-size: 11px; color: var(--cp-text-muted); flex-shrink: 0; margin-left: 8px;">
+                                                {{ channel.last_post.create_at|date:"H:i" }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    {% if channel.last_post %}
+                                        <div style="font-size: 12px; color: var(--cp-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; {% if channel.unread_count and channel.unread_count > 0 %}font-weight: 500;{% endif %}">
+                                            {% if channel.last_post.username %}
+                                                {{ channel.last_post.username }}: 
+                                            {% endif %}
+                                            {{ channel.last_post.message|truncatewords:15|default:"..." }}
+                                        </div>
+                                    {% else %}
+                                        <div style="font-size: 12px; color: var(--cp-text-muted); font-style: italic;">
+                                            Нет сообщений
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                {% else %}
+                    <div style="padding: 16px; color: var(--cp-text-muted); text-align: center;">
+                        Нет личных сообщений
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Основная область чата -->
+        <div class="cp-card" style="display: flex; flex-direction: column; padding: 0; overflow: hidden;">
+            {% if selected_channel %}
+                <!-- Заголовок канала -->
+                <div style="padding: 16px; border-bottom: 1px solid var(--cp-border-light); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-{% if selected_channel.type == 'D' %}user{% elif selected_channel.type == 'P' %}lock{% else %}hashtag{% endif %}"></i>
+                            {% if selected_channel.type == 'D' and selected_channel.other_user %}
+                                {% if selected_channel.other_user.first_name or selected_channel.other_user.last_name %}
+                                    {{ selected_channel.other_user.first_name }} {{ selected_channel.other_user.last_name }}
+                                {% else %}
+                                    {{ selected_channel.other_user.username|default:selected_channel.display_name }}
+                                {% endif %}
+                            {% else %}
+                                {{ selected_channel.display_name|default:selected_channel.name }}
+                            {% endif %}
+                        </h3>
+                        {% if selected_channel.type == 'D' and selected_channel.other_user %}
+                            <p style="margin: 4px 0 0 0; font-size: 12px; color: var(--cp-text-muted);">
+                                @{{ selected_channel.other_user.username }}
+                                {% if selected_channel.other_user.email %}
+                                    • {{ selected_channel.other_user.email }}
+                                {% endif %}
+                            </p>
+                        {% elif selected_channel.type != 'D' %}
+                            <p style="margin: 4px 0 0 0; font-size: 12px; color: var(--cp-text-muted);">
+                                {{ selected_channel.header|default:selected_channel.purpose|default:"" }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    {% if channel_members and selected_channel.type != 'D' %}
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span style="font-size: 12px; color: var(--cp-text-muted);">
+                                {{ channel_members|length }} участников
+                            </span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Область сообщений -->
+                <div style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column-reverse;">
+                    {% for post in channel_posts %}
+                        <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--cp-border-light);">
+                            <div style="display: flex; gap: 12px;">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--cp-gradient-primary); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; flex-shrink: 0;">
+                                    {{ post.username|default:post.user_id|slice:":1"|upper }}
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; gap: 8px; align-items: baseline; margin-bottom: 4px;">
+                                        <strong style="font-size: 14px;">{{ post.username|default:post.user_id }}</strong>
+                                        <span style="font-size: 12px; color: var(--cp-text-muted);">
+                                            {% if post.create_at %}
+                                                {{ post.create_at|date:"d.m.Y H:i" }}
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div style="color: var(--cp-text-main); line-height: 1.5; white-space: pre-wrap;">
+                                        {{ post.message }}
+                                    </div>
+                                    {% if post.files %}
+                                        <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 8px;">
+                                            {% for file in post.files %}
+                                                {% if file.mime_type|slice:":5" == "image" %}
+                                                    <div style="margin-top: 8px;">
+                                                        <a href="{{ file.url }}" target="_blank" style="display: inline-block;">
+                                                            <img src="{{ file.url }}" alt="{{ file.name }}" 
+                                                                 style="max-width: 400px; max-height: 300px; border-radius: 8px; border: 1px solid var(--cp-border); cursor: pointer;"
+                                                                 onclick="window.open('{{ file.url }}', '_blank')">
+                                                        </a>
+                                                        <div style="font-size: 11px; color: var(--cp-text-muted); margin-top: 4px;">
+                                                            <a href="{{ file.url }}" target="_blank" style="color: var(--cp-accent); text-decoration: none;">
+                                                                {{ file.name }}
+                                                            </a>
+                                                            {% if file.size %}
+                                                                ({{ file.size|filesizeformat }})
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <div style="padding: 8px 12px; background: var(--cp-bg-elevated); border: 1px solid var(--cp-border); border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+                                                        <i class="fas fa-file" style="font-size: 20px; color: var(--cp-text-muted);"></i>
+                                                        <div style="flex: 1; min-width: 0;">
+                                                            <a href="{{ file.url }}" target="_blank" 
+                                                               style="color: var(--cp-accent); text-decoration: none; font-weight: 500; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                                {{ file.name }}
+                                                            </a>
+                                                            {% if file.size %}
+                                                                <div style="font-size: 11px; color: var(--cp-text-muted);">
+                                                                    {{ file.size|filesizeformat }}
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        <a href="{{ file.url }}" target="_blank" 
+                                                           style="color: var(--cp-accent); text-decoration: none; padding: 4px 8px;">
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div style="padding: 16px; color: var(--cp-text-muted); text-align: center;">
+                            В этом канале пока нет сообщений.
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Форма отправки сообщения -->
+                <div style="padding: 16px; border-top: 1px solid var(--cp-border); background: var(--cp-bg-elevated);">
+                    <form method="post" action="?channel={{ selected_channel.id }}" style="display: flex; gap: 8px;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="send_message">
+                        <input type="hidden" name="channel_id" value="{{ selected_channel.id }}">
+                        <textarea name="message" placeholder="Напишите сообщение..." 
+                                  style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--cp-border); background: var(--cp-bg); color: var(--cp-text-main); resize: vertical; min-height: 40px; max-height: 120px;"
+                                  rows="1"></textarea>
+                        <button type="submit" class="cp-button" style="padding: 10px 16px; border-radius: 8px; background: var(--cp-accent); color: white; border: none; cursor: pointer;">
+                            <i class="fas fa-paper-plane"></i> Отправить
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <div style="flex: 1; display: flex; align-items: center; justify-content: center; color: var(--cp-text-muted);">
+                    Выберите канал или личное сообщение для начала общения.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Модальное окно для создания нового чата -->
+    <div id="createChatModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="cp-card" style="width: 90%; max-width: 500px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
+            <div style="padding: 16px; border-bottom: 1px solid var(--cp-border-light); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Создать новый чат</h3>
+                <button onclick="closeCreateChatModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--cp-text-muted);">&times;</button>
+            </div>
+            <div style="flex: 1; overflow-y: auto; padding: 16px;">
+                <input type="text" id="userSearch" placeholder="Поиск пользователя..." 
+                       style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--cp-border); margin-bottom: 16px;"
+                       onkeyup="filterUsers()">
+                <div id="usersList" style="display: flex; flex-direction: column; gap: 8px;">
+                    {% for user in all_users %}
+                        <form method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="create_dm">
+                            <input type="hidden" name="create_dm_user_id" value="{{ user.id }}">
+                            <button type="submit" class="user-item" 
+                                    style="width: 100%; padding: 12px; border: 1px solid var(--cp-border); border-radius: 8px; background: var(--cp-bg); cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; transition: background 0.2s;"
+                                    onmouseover="this.style.background='var(--cp-sidebar-hover)'"
+                                    onmouseout="this.style.background='var(--cp-bg)'">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--cp-gradient-primary); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; flex-shrink: 0;">
+                                    {{ user.username|first|upper|default:"?" }}
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600;">
+                                        {% if user.first_name or user.last_name %}
+                                            {{ user.first_name }} {{ user.last_name }}
+                                        {% else %}
+                                            {{ user.username }}
+                                        {% endif %}
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--cp-text-muted);">
+                                        @{{ user.username }}
+                                        {% if user.email %}
+                                            • {{ user.email }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </button>
+                        </form>
+                    {% empty %}
+                        <div style="padding: 16px; color: var(--cp-text-muted); text-align: center;">
+                            Нет доступных пользователей
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function switchTab(tab) {
+            // Скрываем все вкладки
+            document.querySelectorAll('.chat-tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.querySelectorAll('.chat-tab').forEach(btn => {
+                btn.style.borderBottom = '2px solid transparent';
+                btn.classList.remove('active');
+            });
+            
+            // Показываем выбранную вкладку
+            document.getElementById('content-' + tab).style.display = 'block';
+            const tabBtn = document.getElementById('tab-' + tab);
+            tabBtn.style.borderBottom = '2px solid #4caf50';
+            tabBtn.style.color = '#4caf50';
+            tabBtn.classList.add('active');
+            
+            // Убираем подсветку с неактивной вкладки
+            const otherTab = tab === 'channels' ? 'direct' : 'channels';
+            const otherTabBtn = document.getElementById('tab-' + otherTab);
+            otherTabBtn.style.borderBottom = '2px solid transparent';
+            otherTabBtn.style.color = '';
+            otherTabBtn.classList.remove('active');
+        }
+        
+        // Автоматическое переключение вкладки при выборе канала
+        {% if selected_channel %}
+            {% if selected_channel.type == 'D' %}
+                switchTab('direct');
+            {% else %}
+                switchTab('channels');
+            {% endif %}
+        {% endif %}
+        
+        function openCreateChatModal() {
+            document.getElementById('createChatModal').style.display = 'flex';
+        }
+        
+        function closeCreateChatModal() {
+            document.getElementById('createChatModal').style.display = 'none';
+        }
+        
+        function filterUsers() {
+            const search = document.getElementById('userSearch').value.toLowerCase();
+            const users = document.querySelectorAll('.user-item');
+            users.forEach(user => {
+                const text = user.textContent.toLowerCase();
+                if (text.includes(search)) {
+                    user.style.display = 'flex';
+                } else {
+                    user.style.display = 'none';
+                }
+            });
+        }
+        
+        // Закрытие модального окна при клике вне его
+        document.getElementById('createChatModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCreateChatModal();
+            }
+        });
+    </script>
+    
+    <style>
+        .chat-tab:hover {
+            background: var(--cp-sidebar-hover);
+        }
+        .chat-tab.active {
+            color: #4caf50 !important;
+            border-bottom-color: #4caf50 !important;
+        }
+        .chat-tab:not(.active) {
+            color: var(--cp-text-main);
+        }
+    </style>
+{% endif %}
+{% endblock %}

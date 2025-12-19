@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}База знаний — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+База знаний
+{% endblock %}
+
+{% block content %}
+<div style="display: flex; gap: 24px;">
+    <div style="flex: 1;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+                <h1 class="cp-page-title">База знаний</h1>
+                <p class="cp-page-subtitle">
+                    Регламенты, инструкции, информация по проектам и внутренним процессам компании.
+                </p>
+            </div>
+            {% if is_moderator %}
+                <div style="display: flex; gap: 12px;">
+                    <a href="{% url 'wiki_create' %}" class="cp-menu-link" style="padding: 10px 20px; background: var(--cp-accent); color: white; border-radius: 6px; text-decoration: none; font-weight: 600;">
+                        <i class="fas fa-plus"></i> Создать статью
+                    </a>
+                    <a href="{% url 'wiki_groups_list' %}" class="cp-menu-link" style="padding: 10px 20px; background: var(--cp-bg-elevated); color: var(--cp-text-main); border: 1px solid var(--cp-border); border-radius: 6px; text-decoration: none; font-weight: 600;">
+                        <i class="fas fa-users"></i> Группы просмотра
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if articles %}
+            <section class="cp-card">
+                <header class="cp-card-header">
+                    <div>
+                        <div class="cp-card-title">Статьи базы знаний</div>
+                        <div class="cp-card-subtitle">Выберите статью для просмотра</div>
+                    </div>
+                </header>
+                <div style="padding: 20px;">
+                    {% for article in articles %}
+                        <div style="margin-bottom: 16px; padding: 16px; border: 1px solid var(--cp-border); border-radius: 8px; background: var(--cp-bg-elevated);">
+                            <h3 style="margin: 0 0 8px 0;">
+                                <a href="{% url 'wiki_article' article.slug %}" class="cp-menu-link" style="font-size: 18px; font-weight: 600;">
+                                    {{ article.title }}
+                                </a>
+                            </h3>
+                            <p style="margin: 0; color: var(--cp-text-muted); font-size: 14px;">
+                                Автор: {{ article.author.get_full_name|default:article.author.username }} · 
+                                Обновлено: {{ article.updated_at|date:"d.m.Y H:i" }}
+                            </p>
+                            {% with published_children=article.children.all %}
+                                {% for child in published_children %}
+                                    {% if child.is_published %}
+                                        {% if forloop.first %}
+                                            <div style="margin-top: 12px; padding-left: 20px; border-left: 2px solid var(--cp-border);">
+                                                <p style="margin: 0 0 8px 0; font-size: 12px; color: var(--cp-text-muted); font-weight: 600;">Подразделы:</p>
+                                        {% endif %}
+                                        <div style="margin-bottom: 8px;">
+                                            <a href="{% url 'wiki_article' child.slug %}" class="cp-menu-link" style="font-size: 14px;">
+                                                {{ child.title }}
+                                            </a>
+                                        </div>
+                                        {% if forloop.last %}
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% else %}
+            <section class="cp-card">
+                <div style="padding: 40px; text-align: center;">
+                    <i class="fas fa-book" style="font-size: 48px; color: var(--cp-text-muted); margin-bottom: 16px;"></i>
+                    <p class="cp-link-muted" style="font-size: 16px; margin-bottom: 24px;">
+                        Статьи базы знаний ещё не созданы.
+                    </p>
+                    {% if is_moderator %}
+                        <a href="{% url 'wiki_create' %}" class="cp-menu-link" style="padding: 10px 20px; background: var(--cp-accent); color: white; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
+                            <i class="fas fa-plus"></i> Создать первую статью
+                        </a>
+                    {% endif %}
+                </div>
+            </section>
+        {% endif %}
+    </div>
+
+    <aside style="width: 300px; flex-shrink: 0;">
+        <section class="cp-card" style="position: sticky; top: 80px;">
+            <header class="cp-card-header">
+                <div>
+                    <div class="cp-card-title">Содержание</div>
+                    <div class="cp-card-subtitle">Навигация по статьям</div>
+                </div>
+            </header>
+            <div style="padding: 16px;">
+                {% if articles %}
+                    <nav style="display: flex; flex-direction: column; gap: 8px;">
+                        {% for article in articles %}
+                            <a href="{% url 'wiki_article' article.slug %}" class="cp-menu-link" style="display: block; padding: 8px 12px; border-radius: 6px; text-decoration: none;">
+                                {{ article.title }}
+                            </a>
+                            {% with published_children=article.children.all %}
+                                {% for child in published_children %}
+                                    {% if child.is_published %}
+                                        {% if forloop.first %}
+                                            <div style="padding-left: 20px; margin-top: 4px;">
+                                        {% endif %}
+                                        <a href="{% url 'wiki_article' child.slug %}" class="cp-menu-link" style="display: block; padding: 6px 12px; font-size: 13px; color: var(--cp-text-muted); border-radius: 6px; text-decoration: none;">
+                                            {{ child.title }}
+                                        </a>
+                                        {% if forloop.last %}
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                        {% endfor %}
+                    </nav>
+                {% else %}
+                    <p class="cp-link-muted" style="text-align: center; padding: 20px;">
+                        Нет статей
+                    </p>
+                {% endif %}
+            </div>
+        </section>
+    </aside>
+</div>
+{% endblock %}
+

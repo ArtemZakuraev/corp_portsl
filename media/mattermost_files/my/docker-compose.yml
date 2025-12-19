@@ -1,0 +1,123 @@
+services:
+  postgresql:
+    image: pgvector/pgvector:pg17
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: aiuser
+      POSTGRES_PASSWORD: aipass
+      POSTGRES_DB: ai_db
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    networks:
+     ollama:
+
+  lightrag:
+    image: ttartem/lightrag:1
+    ports:
+      - "9621:9621"
+    volumes:
+      - ./data/rag_storage:/app/data/rag_storage
+      - ./data/inputs:/app/data/inputs
+      - ./config.ini:/app/config.ini
+      - ./.env2:/app/.env
+      # - ./data/tiktoken:/app/data/tiktoken
+    env_file:
+      - .env2
+    environment:
+      - TIKTOKEN_CACHE_DIR=/app/data/tiktoken
+    restart: unless-stopped
+    networks:
+     ollama:
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_HOST=127.0.0.1
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - N8N_RUNNERS_ENABLED=true
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://127.0.0.1/
+      - GENERIC_TIMEZONE=Europe/Berlin
+      - TZ=Europe/Berlin
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+      - ./local-files:/files
+    networks:
+     ollama:
+  webui:
+    image: ttartem/open-webui:git-071a2ac-ollama
+    restart: unless-stopped
+    ports:
+    - "8081:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_HOST=ollama:11434
+     # - GLOBAL_LOG_LEVEL=DEBUG
+     # - OLLAMA_LOG_LEVEL=DEBUG
+
+     # uncomment the following if you are running ollama on the docker host and remove the ollama service below
+     #- OLLAMA_BASE_URL=http://host.docker.internal:11434
+    volumes:
+      - ./open-webui:/app/backend/data
+    networks:
+     ollama:
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    ports:
+    - "11434:11434"
+    environment:
+#     - HTTP_PROXY=http://10.184.13.164:1010/
+#     - HTTPS_PROXY=http://10.184.13.164:1010/
+#     - NO_PROXY=localhost,127.0.0.1
+     - OLLAMA_DEBUG=1
+     - OLLAMA_HOST="0.0.0.0"
+    healthcheck:
+      test: ollama --version || exit 1
+    command: serve
+    networks:
+     ollama:
+    volumes:
+      - ./ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['all']
+              capabilities: [gpu]
+#  ollama_proxy:
+#    image: ollama_proxy:3
+#    restart: always
+#    env_file:
+#     - ./.env
+#    environment:
+#     - ALLOWED_IPS="0.0.0.0, 127.0.0.0/24, 172.0.0.0/24, 10.0.0.0/24"
+#    ports:
+#    - "800:8080"
+#    volumes:
+#      - ./db_proxy/ollama_proxy.db:/app/ollama_proxy.db
+#    networks:
+#     ollama:
+
+#  redis:
+#    image: redis:latest
+#    ports:
+#      - "6379:6379"
+#    volumes:
+#      - ./redis_data:/data
+#    environment:
+#      - REDIS_PASSWORD=mysecretpassword
+#    command: redis-server --appendonly yes
+#    networks:
+#     ollama:
+
+networks:
+  ollama:

@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}График отпусков — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Рабочий стол / График отпусков
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">График отпусков</h1>
+<p class="cp-page-subtitle">
+    Просмотр графика отпусков всех сотрудников компании.
+</p>
+
+<!-- Форма создания отпуска -->
+<div class="cp-card" style="margin-bottom: 16px;">
+    <header class="cp-card-header">
+        <div>
+            <div class="cp-card-title">Добавить свой отпуск</div>
+            <div class="cp-card-subtitle">Заполните график отпусков на {{ current_year }} год</div>
+        </div>
+    </header>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="cp-alert {% if message.tags == 'error' %}cp-alert-error{% elif message.tags == 'success' %}cp-alert-success{% else %}cp-alert-info{% endif %}" style="margin-bottom: 16px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div style="margin-bottom: 16px; padding: 12px; background: var(--cp-bg-elevated); border-radius: 8px; border: 1px solid var(--cp-border-light);">
+        <strong>Использовано отпускных дней в {{ current_year }} году:</strong> 
+        <span style="color: {% if user_vacation_days >= 28 %}red{% elif user_vacation_days >= 20 %}orange{% else %}green{% endif %};">
+            {{ user_vacation_days }} из 28
+        </span>
+    </div>
+    
+    <form method="post" id="vacation-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="vacation">
+
+        <div id="vacation-periods">
+            <div class="vacation-period-row" style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; align-items: flex-end;">
+                <div style="flex: 1; min-width: 150px;">
+                    <label style="display: block; margin-bottom: 4px; font-size: 14px; font-weight: 500;">Дата начала</label>
+                    <input type="date" name="start_date" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--cp-border); border-radius: 8px;">
+                </div>
+                <div style="flex: 1; min-width: 150px;">
+                    <label style="display: block; margin-bottom: 4px; font-size: 14px; font-weight: 500;">Дата окончания</label>
+                    <input type="date" name="end_date" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--cp-border); border-radius: 8px;">
+                </div>
+                <div style="flex: 1; min-width: 150px;">
+                    <label style="display: block; margin-bottom: 4px; font-size: 14px; font-weight: 500;">Тип отпуска</label>
+                    <select name="vacation_type" style="width: 100%; padding: 8px 12px; border: 1px solid var(--cp-border); border-radius: 8px;">
+                        <option value="main">Основной отпуск</option>
+                        <option value="extra">Дополнительный отпуск</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+            <button type="button" id="add-period-btn" class="cp-button" style="background: var(--cp-bg-elevated); color: var(--cp-text-main); border: 1px solid var(--cp-border);">
+                + Добавить период
+            </button>
+            <button type="submit" class="cp-button" style="background: var(--cp-primary); color: white;">
+                Сохранить отпуск
+            </button>
+        </div>
+    </form>
+
+    <script>
+        (function () {
+            const container = document.getElementById('vacation-periods');
+            const addBtn = document.getElementById('add-period-btn');
+            addBtn.addEventListener('click', function () {
+                const row = document.createElement('div');
+                row.className = 'vacation-period-row';
+                row.style.cssText = 'display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; align-items: flex-end;';
+                row.innerHTML = `
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display: block; margin-bottom: 4px; font-size: 14px; font-weight: 500;">Дата начала</label>
+                        <input type="date" name="start_date" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--cp-border); border-radius: 8px;">
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display: block; margin-bottom: 4px; font-size: 14px; font-weight: 500;">Дата окончания</label>
+                        <input type="date" name="end_date" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--cp-border); border-radius: 8px;">
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display: block; margin-bottom: 4px; font-size: 14px; font-weight: 500;">Тип отпуска</label>
+                        <select name="vacation_type" style="width: 100%; padding: 8px 12px; border: 1px solid var(--cp-border); border-radius: 8px;">
+                            <option value="main">Основной отпуск</option>
+                            <option value="extra">Дополнительный отпуск</option>
+                        </select>
+                    </div>
+                    <div style="flex: 0 0 auto;">
+                        <button type="button" class="remove-period-btn" style="padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            Удалить
+                        </button>
+                    </div>
+                `;
+                container.appendChild(row);
+                
+                // Добавляем обработчик для кнопки удаления
+                const removeBtn = row.querySelector('.remove-period-btn');
+                removeBtn.addEventListener('click', function() {
+                    row.remove();
+                });
+            });
+        })();
+    </script>
+</div>
+
+<!-- Фильтры и экспорт -->
+<div class="cp-card" style="margin-bottom: 16px;">
+    <form method="get" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;">
+        <div style="flex: 1; min-width: 200px;">
+            <label style="display: block; margin-bottom: 4px; font-size: 14px; font-weight: 500;">Поиск по ФИО</label>
+            <input type="text" name="search" value="{{ search_query }}" 
+                   placeholder="Фамилия, имя или отчество"
+                   style="width: 100%; padding: 8px 12px; border: 1px solid var(--cp-border); border-radius: 8px;">
+        </div>
+        
+        <div style="flex: 1; min-width: 200px;">
+            <label style="display: block; margin-bottom: 4px; font-size: 14px; font-weight: 500;">Департамент</label>
+            <select name="department" style="width: 100%; padding: 8px 12px; border: 1px solid var(--cp-border); border-radius: 8px;">
+                <option value="">Все департаменты</option>
+                {% for dept in all_departments %}
+                    <option value="{{ dept.id }}" {% if department_filter == dept.id|stringformat:"s" %}selected{% endif %}>{{ dept.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div style="flex: 1; min-width: 200px;">
+            <label style="display: block; margin-bottom: 4px; font-size: 14px; font-weight: 500;">Отдел</label>
+            <select name="unit" style="width: 100%; padding: 8px 12px; border: 1px solid var(--cp-border); border-radius: 8px;">
+                <option value="">Все отделы</option>
+                {% for unit in all_units %}
+                    <option value="{{ unit.id }}" {% if unit_filter == unit.id|stringformat:"s" %}selected{% endif %}>{{ unit.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div style="display: flex; gap: 8px;">
+            <button type="submit" class="cp-button" style="padding: 8px 16px;">
+                <i class="fas fa-search"></i> Применить
+            </button>
+            <a href="{% url 'vacations' %}" class="cp-button" style="padding: 8px 16px; background: var(--cp-bg-elevated); color: var(--cp-text-main); text-decoration: none; border: 1px solid var(--cp-border);">
+                <i class="fas fa-times"></i> Сбросить
+            </a>
+        </div>
+    </form>
+    
+    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--cp-border-light); display: flex; gap: 8px;">
+        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if department_filter %}department={{ department_filter }}&{% endif %}{% if unit_filter %}unit={{ unit_filter }}&{% endif %}export=xls" 
+           class="cp-button" style="padding: 8px 16px; background: #28a745; color: white; text-decoration: none;">
+            <i class="fas fa-file-excel"></i> Экспорт в Excel
+        </a>
+        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if department_filter %}department={{ department_filter }}&{% endif %}{% if unit_filter %}unit={{ unit_filter }}&{% endif %}export=pdf" 
+           class="cp-button" style="padding: 8px 16px; background: #dc3545; color: white; text-decoration: none;">
+            <i class="fas fa-file-pdf"></i> Экспорт в PDF
+        </a>
+    </div>
+</div>
+
+<!-- Таблица отпусков -->
+<div class="cp-card">
+    <div class="cp-table-wrapper">
+        <table class="cp-table">
+            <thead>
+                <tr>
+                    <th>ФИО</th>
+                    <th>Дата начала</th>
+                    <th>Дата окончания</th>
+                    <th>Отдел</th>
+                    <th>Департамент</th>
+                    <th>Должность</th>
+                    <th>Тип отпуска</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vacation in vacations %}
+                    <tr>
+                        <td><strong>{{ vacation.full_name }}</strong></td>
+                        <td>{{ vacation.start_date|date:"d.m.Y" }}</td>
+                        <td>{{ vacation.end_date|date:"d.m.Y" }}</td>
+                        <td>{{ vacation.unit }}</td>
+                        <td>{{ vacation.department }}</td>
+                        <td>{{ vacation.position }}</td>
+                        <td>{{ vacation.vacation_type }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--cp-text-muted); padding: 32px;">
+                            Нет данных об отпусках
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if vacations %}
+        <div style="padding: 16px; border-top: 1px solid var(--cp-border-light); color: var(--cp-text-muted); font-size: 14px;">
+            Всего записей: {{ vacations|length }}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+

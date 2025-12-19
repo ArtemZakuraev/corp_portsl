@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Удалить группу просмотра — База знаний — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+База знаний / Группы просмотра / Удалить
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">Удалить группу просмотра</h1>
+<p class="cp-page-subtitle">
+    Вы уверены, что хотите удалить эту группу?
+</p>
+
+<div style="margin-bottom: 16px;">
+    <a href="{% url 'wiki_groups_list' %}" class="cp-menu-link">
+        <i class="fas fa-arrow-left"></i> Вернуться к списку групп
+    </a>
+</div>
+
+<section class="cp-card">
+    <div style="padding: 24px;">
+        <div style="margin-bottom: 24px;">
+            <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600;">{{ group.name }}</h3>
+            {% if group.description %}
+                <p style="margin: 0; color: var(--cp-text-muted);">{{ group.description }}</p>
+            {% endif %}
+        </div>
+
+        <div style="padding: 16px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; margin-bottom: 24px;">
+            <p style="margin: 0; color: #856404; font-weight: 600;">
+                <i class="fas fa-exclamation-triangle"></i> Внимание!
+            </p>
+            <p style="margin: 8px 0 0 0; color: #856404;">
+                При удалении группы просмотра статьи, использующие эту группу, могут стать недоступными для пользователей, которые были в этой группе.
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+            <form method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" style="padding: 12px 24px; background: #d32f2f; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-trash"></i> Да, удалить группу
+                </button>
+            </form>
+            <a href="{% url 'wiki_groups_list' %}" class="cp-menu-link" style="padding: 12px 24px; border: 1px solid var(--cp-border); border-radius: 6px; text-decoration: none; display: inline-block;">
+                Отмена
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+
+
+

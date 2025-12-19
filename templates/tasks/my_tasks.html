@@ -1,0 +1,551 @@
+{% extends "base.html" %}
+{% load task_filters %}
+
+{% block title %}Мои задачи — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Рабочий стол / Мои задачи
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">Мои задачи</h1>
+<p class="cp-page-subtitle">
+    Здесь вы можете задавать задачи самому себе, указывать описание, дату и важность. В назначенный день система может отправить
+    вам напоминание по email (при запуске соответствующей служебной команды).
+    {% if user_has_subordinates %}
+        Также вы можете создавать задачи для своих подчиненных.
+    {% endif %}
+</p>
+
+{% if debug_info.is_dept_head or debug_info.is_unit_head %}
+    {% if not user_has_subordinates %}
+        <div style="padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; margin-bottom: 16px;">
+            <p style="margin: 0 0 8px 0; color: #856404; font-size: 13px; font-weight: 600;">
+                <i class="fas fa-info-circle"></i> 
+                Вы являетесь руководителем, но у вас пока нет подчиненных сотрудников.
+            </p>
+            <p style="margin: 0; color: #856404; font-size: 12px;">
+                Подчиненные определяются по департаментам и отделам, которыми вы руководите, 
+                и сотрудникам, которые привязаны к этим департаментам/отделам в их профилях (UserProfile) 
+                или через связь "Сотрудники отдела" в настройках отдела.
+            </p>
+            <p style="margin: 8px 0 0 0; color: #856404; font-size: 11px;">
+                Статус: {% if debug_info.is_dept_head %}Руководитель департамента{% endif %}{% if debug_info.is_dept_head and debug_info.is_unit_head %} и {% endif %}{% if debug_info.is_unit_head %}Руководитель отдела{% endif %}. 
+                Найдено подчиненных: {{ debug_info.subordinates_count }}.
+            </p>
+        </div>
+    {% endif %}
+{% endif %}
+
+{% if user_has_subordinates %}
+<section class="cp-card" style="margin-bottom: 16px;">
+    <header class="cp-card-header">
+        <div>
+            <div class="cp-card-title">Создать задачу подчиненному</div>
+            <div class="cp-card-subtitle">Назначить задачу сотруднику из вашего отдела или департамента</div>
+        </div>
+    </header>
+    <form method="post" id="subordinate-task-form" onsubmit="setTimeout(updateTasksCount, 500);" style="padding: 20px;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create_subordinate_task">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div>
+                <label for="{{ subordinate_form.assignee.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                    {{ subordinate_form.assignee.label }}:
+                </label>
+                {{ subordinate_form.assignee }}
+                {% if subordinate_form.assignee.help_text %}
+                    <p style="font-size: 12px; color: var(--cp-text-muted); margin-top: 4px;">{{ subordinate_form.assignee.help_text }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="{{ subordinate_form.title.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                    {{ subordinate_form.title.label }}:
+                </label>
+                {{ subordinate_form.title }}
+            </div>
+            <div>
+                <label for="{{ subordinate_form.description.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                    {{ subordinate_form.description.label }}:
+                </label>
+                {{ subordinate_form.description }}
+            </div>
+            <div style="display: flex; gap: 16px;">
+                <div style="flex: 1;">
+                    <label for="{{ subordinate_form.due_date.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                        {{ subordinate_form.due_date.label }}:
+                    </label>
+                    {{ subordinate_form.due_date }}
+                </div>
+                <div style="flex: 1;">
+                    <label for="{{ subordinate_form.priority.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                        {{ subordinate_form.priority.label }}:
+                    </label>
+                    {{ subordinate_form.priority }}
+                </div>
+            </div>
+            <div>
+                <button type="submit" style="padding: 10px 20px; background: var(--cp-accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-user-plus"></i> Создать задачу подчиненному
+                </button>
+            </div>
+        </div>
+    </form>
+</section>
+{% endif %}
+
+<section class="cp-card">
+    <header class="cp-card-header">
+        <div>
+            <div class="cp-card-title">Создать задачу себе</div>
+            <div class="cp-card-subtitle">Наименование, описание, срок выполнения и важность</div>
+        </div>
+    </header>
+    <form method="post" id="task-form" onsubmit="setTimeout(updateTasksCount, 500);" style="padding: 20px;">
+        {% csrf_token %}
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            {{ form.as_p }}
+            <div>
+                <button type="submit" style="padding: 10px 20px; background: var(--cp-accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    Сохранить задачу
+                </button>
+            </div>
+        </div>
+    </form>
+</section>
+
+<section class="cp-card" style="margin-top: 16px;">
+    <header class="cp-card-header">
+        <div>
+            <div class="cp-card-title">Список задач</div>
+            <div class="cp-card-subtitle">Ваши задачи</div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <!-- Переключатель режима отображения -->
+            <form method="post" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_view_mode">
+                <input type="hidden" name="view_mode" value="{% if view_mode == 'list' %}kanban{% else %}list{% endif %}">
+                <button type="submit" style="padding: 6px 12px; background: var(--cp-accent); color: var(--cp-accent-contrast); border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                    {% if view_mode == 'list' %}
+                        <i class="fas fa-th"></i> Канбан
+                    {% else %}
+                        <i class="fas fa-list"></i> Список
+                    {% endif %}
+                </button>
+            </form>
+            
+            <!-- Сортировка -->
+            <form method="post" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_sort_by">
+                <select name="sort_by" onchange="this.form.submit()" style="padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
+                    <option value="priority" {% if sort_by == 'priority' %}selected{% endif %}>По важности</option>
+                    <option value="due_date" {% if sort_by == 'due_date' %}selected{% endif %}>По дате окончания</option>
+                    <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>По дате создания</option>
+                </select>
+            </form>
+            
+            <!-- Настройки цветов -->
+            <button onclick="toggleColorSettings()" style="padding: 6px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                <i class="fas fa-palette"></i> Цвета
+            </button>
+        </div>
+    </header>
+    
+    <!-- Настройки цветов (скрыто по умолчанию) -->
+    <div id="colorSettings" style="display: none; padding: 16px; background: #f8f9fa; border-top: 1px solid #ddd; margin-top: 16px;">
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_priority_colors">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Важно:</label>
+                    <input type="color" name="important_color" value="{{ priority_colors.important }}" style="width: 100%; height: 40px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Срочно:</label>
+                    <input type="color" name="urgent_color" value="{{ priority_colors.urgent }}" style="width: 100%; height: 40px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Критично:</label>
+                    <input type="color" name="critical_color" value="{{ priority_colors.critical }}" style="width: 100%; height: 40px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                </div>
+            </div>
+            <button type="submit" style="margin-top: 12px; padding: 8px 16px; background: var(--cp-accent); color: var(--cp-accent-contrast); border: none; border-radius: 4px; cursor: pointer;">
+                Сохранить цвета
+            </button>
+        </form>
+    </div>
+    
+    {% if view_mode == 'kanban' %}
+        <!-- Канбан-доска -->
+        <div id="kanban-board" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px;">
+            <!-- Новая -->
+            <div class="kanban-column" data-status="new" style="background: #f8f9fa; border-radius: 8px; padding: 16px; min-height: 400px;">
+                <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600;">Новая</h3>
+                <div class="kanban-column-content" style="display: flex; flex-direction: column; gap: 12px;">
+                    {% for task in tasks_by_status.new %}
+                        <div class="task-card" draggable="true" data-task-id="{{ task.id }}" data-status="new" style="background: white; border-radius: 6px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #dc3545; cursor: move;">
+                            <div style="font-weight: 600; margin-bottom: 8px;">{{ task.title }}</div>
+                            {% if task.created_by != task.assignee %}
+                                <div style="font-size: 11px; color: #1976d2; margin-bottom: 4px; font-weight: 600;">
+                                    <i class="fas fa-user-tie"></i> От: {{ task.created_by.get_full_name|default:task.created_by.username }}
+                                </div>
+                            {% endif %}
+                            {% if task.description %}
+                                <div style="font-size: 12px; color: #666; margin-bottom: 8px;">{{ task.description|truncatewords:15 }}</div>
+                            {% endif %}
+                            {% if task.priority %}
+                                <div style="font-size: 11px; color: #666; margin-bottom: 4px;">
+                                    <strong>Важность:</strong> {{ task.get_priority_display }}
+                                </div>
+                            {% endif %}
+                            {% if task.due_date %}
+                                <div style="font-size: 11px; color: #666;">
+                                    <strong>Срок:</strong> {{ task.due_date|date:"d.m.Y" }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <div class="empty-placeholder" style="text-align: center; color: #999; padding: 20px;">Нет задач</div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- В работе -->
+            <div class="kanban-column" data-status="in_progress" style="background: #f8f9fa; border-radius: 8px; padding: 16px; min-height: 400px;">
+                <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600;">В работе</h3>
+                <div class="kanban-column-content" style="display: flex; flex-direction: column; gap: 12px;">
+                    {% for task in tasks_by_status.in_progress %}
+                        <div class="task-card" draggable="true" data-task-id="{{ task.id }}" data-status="in_progress" style="background: white; border-radius: 6px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #ff9800; cursor: move;">
+                            <div style="font-weight: 600; margin-bottom: 8px;">{{ task.title }}</div>
+                            {% if task.created_by != task.assignee %}
+                                <div style="font-size: 11px; color: #1976d2; margin-bottom: 4px; font-weight: 600;">
+                                    <i class="fas fa-user-tie"></i> От: {{ task.created_by.get_full_name|default:task.created_by.username }}
+                                </div>
+                            {% endif %}
+                            {% if task.description %}
+                                <div style="font-size: 12px; color: #666; margin-bottom: 8px;">{{ task.description|truncatewords:15 }}</div>
+                            {% endif %}
+                            {% if task.priority %}
+                                <div style="font-size: 11px; color: #666; margin-bottom: 4px;">
+                                    <strong>Важность:</strong> {{ task.get_priority_display }}
+                                </div>
+                            {% endif %}
+                            {% if task.due_date %}
+                                <div style="font-size: 11px; color: #666;">
+                                    <strong>Срок:</strong> {{ task.due_date|date:"d.m.Y" }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <div class="empty-placeholder" style="text-align: center; color: #999; padding: 20px;">Нет задач</div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Выполнена -->
+            <div class="kanban-column" data-status="done" style="background: #f8f9fa; border-radius: 8px; padding: 16px; min-height: 400px;">
+                <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600;">Выполнена</h3>
+                <div class="kanban-column-content" style="display: flex; flex-direction: column; gap: 12px;">
+                    {% for task in tasks_by_status.done %}
+                        <div class="task-card" draggable="true" data-task-id="{{ task.id }}" data-status="done" style="background: white; border-radius: 6px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid {% if task.priority %}{{ priority_colors|get_item:task.priority }}{% else %}#ddd{% endif %}; opacity: 0.7; cursor: move;">
+                            <div style="font-weight: 600; margin-bottom: 8px; text-decoration: line-through;">{{ task.title }}</div>
+                            {% if task.created_by != task.assignee %}
+                                <div style="font-size: 11px; color: #1976d2; margin-bottom: 4px; font-weight: 600;">
+                                    <i class="fas fa-user-tie"></i> От: {{ task.created_by.get_full_name|default:task.created_by.username }}
+                                </div>
+                            {% endif %}
+                            {% if task.description %}
+                                <div style="font-size: 12px; color: #666; margin-bottom: 8px;">{{ task.description|truncatewords:15 }}</div>
+                            {% endif %}
+                            {% if task.priority %}
+                                <div style="font-size: 11px; color: #666; margin-bottom: 4px;">
+                                    <strong>Важность:</strong> {{ task.get_priority_display }}
+                                </div>
+                            {% endif %}
+                            {% if task.due_date %}
+                                <div style="font-size: 11px; color: #666;">
+                                    <strong>Срок:</strong> {{ task.due_date|date:"d.m.Y" }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <div class="empty-placeholder" style="text-align: center; color: #999; padding: 20px;">Нет задач</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Список -->
+        <ul class="cp-card-list">
+            {% for task in tasks %}
+                <li class="cp-link-muted" style="border-left: 4px solid {% if task.status == 'new' %}#dc3545{% elif task.status == 'in_progress' %}#ff9800{% elif task.priority %}{{ priority_colors|get_item:task.priority }}{% else %}#ddd{% endif %}; padding-left: 12px; margin-bottom: 8px;">
+                    <strong>{{ task.title }}</strong>
+                    {% if task.created_by != task.assignee %}
+                        <span style="margin-left: 8px; font-size: 11px; color: #1976d2;">
+                            <i class="fas fa-user-tie"></i> От: {{ task.created_by.get_full_name|default:task.created_by.username }}
+                        </span>
+                    {% endif %}
+                    {% if task.priority %}
+                        <span style="margin-left: 8px; padding: 2px 8px; background: {% if task.priority %}{{ priority_colors|get_item:task.priority }}{% else %}#ddd{% endif %}; color: white; border-radius: 4px; font-size: 11px;">
+                            {{ task.get_priority_display }}
+                        </span>
+                    {% endif %}
+                    {% if task.due_date %} — срок: {{ task.due_date|date:"d.m.Y" }}{% endif %}
+                    — статус: {{ task.get_status_display }}
+                </li>
+            {% empty %}
+                <li class="cp-link-muted">У вас пока нет задач.</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</section>
+
+<script>
+function toggleColorSettings() {
+    const settings = document.getElementById('colorSettings');
+    settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
+}
+
+// Функция для обновления счетчика задач в меню
+function updateTasksCount() {
+    fetch('/api/tasks/count/', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Ищем ссылку на задачи по data-menu-id или по href
+        const menuLink = document.querySelector('[data-menu-id="tasks"] a') || 
+                        document.querySelector('a[href*="/tasks/"]');
+        if (menuLink) {
+            const existingBadge = menuLink.querySelector('.cp-menu-badge');
+            // Используем tasks_count или in_progress_count (они одинаковые после исправления)
+            const count = data.tasks_count || data.in_progress_count || 0;
+            if (count > 0) {
+                if (existingBadge) {
+                    existingBadge.textContent = count;
+                } else {
+                    const newBadge = document.createElement('span');
+                    newBadge.className = 'cp-menu-badge';
+                    newBadge.textContent = count;
+                    menuLink.appendChild(newBadge);
+                }
+            } else if (existingBadge) {
+                existingBadge.remove();
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error updating tasks count:', error);
+    });
+}
+
+// Drag and Drop для канбан-доски
+document.addEventListener('DOMContentLoaded', function() {
+    // Обновляем счетчик задач при загрузке страницы
+    updateTasksCount();
+    
+    const kanbanBoard = document.getElementById('kanban-board');
+    if (!kanbanBoard) return; // Если не в режиме канбан-доски, выходим
+    
+    let draggedTask = null;
+    let draggedFromColumn = null;
+    
+    // Обработчики для карточек задач
+    const taskCards = document.querySelectorAll('.task-card');
+    taskCards.forEach(card => {
+        card.addEventListener('dragstart', function(e) {
+            draggedTask = this;
+            draggedFromColumn = this.closest('.kanban-column');
+            this.style.opacity = '0.5';
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.outerHTML);
+        });
+        
+        card.addEventListener('dragend', function(e) {
+            this.style.opacity = '';
+            // Убираем визуальные эффекты
+            document.querySelectorAll('.kanban-column').forEach(col => {
+                col.classList.remove('drag-over');
+            });
+        });
+    });
+    
+    // Обработчики для колонок
+    const columns = document.querySelectorAll('.kanban-column');
+    columns.forEach(column => {
+        column.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('drag-over');
+        });
+        
+        column.addEventListener('dragleave', function(e) {
+            this.classList.remove('drag-over');
+        });
+        
+        column.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            if (!draggedTask) return;
+            
+            const newStatus = this.dataset.status;
+            const oldStatus = draggedTask.dataset.status;
+            
+            // Если статус не изменился, ничего не делаем
+            if (newStatus === oldStatus) {
+                return;
+            }
+            
+            const taskId = draggedTask.dataset.taskId;
+            const columnContent = this.querySelector('.kanban-column-content');
+            
+            // Удаляем placeholder "Нет задач", если он есть
+            const emptyPlaceholder = columnContent.querySelector('.empty-placeholder');
+            if (emptyPlaceholder) {
+                emptyPlaceholder.remove();
+            }
+            
+            // Перемещаем карточку визуально
+            draggedTask.dataset.status = newStatus;
+            columnContent.appendChild(draggedTask);
+            
+            // Отправляем AJAX-запрос для обновления статуса на сервере
+            const formData = new FormData();
+            formData.append('status', newStatus);
+            
+            // Получаем CSRF токен из формы или cookie
+            let csrfToken = null;
+            const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            if (csrfInput) {
+                csrfToken = csrfInput.value;
+            } else {
+                // Пытаемся получить из cookie
+                const name = 'csrftoken';
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    const [key, value] = cookie.trim().split('=');
+                    if (key === name) {
+                        csrfToken = decodeURIComponent(value);
+                        break;
+                    }
+                }
+            }
+            
+            if (!csrfToken) {
+                console.error('CSRF token not found');
+                // Возвращаем карточку обратно
+                const oldColumn = document.querySelector(`.kanban-column[data-status="${oldStatus}"]`);
+                const oldColumnContent = oldColumn.querySelector('.kanban-column-content');
+                draggedTask.dataset.status = oldStatus;
+                oldColumnContent.appendChild(draggedTask);
+                alert('Ошибка: не найден CSRF токен');
+                return;
+            }
+            
+            formData.append('csrfmiddlewaretoken', csrfToken);
+            
+            fetch(`/tasks/${taskId}/update-status/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Обновляем визуальное состояние карточки в зависимости от нового статуса
+                    if (newStatus === 'done') {
+                        draggedTask.style.opacity = '0.7';
+                        draggedTask.style.borderLeft = '4px solid #ddd';
+                        const titleElement = draggedTask.querySelector('div:first-child');
+                        if (titleElement) {
+                            titleElement.style.textDecoration = 'line-through';
+                        }
+                    } else if (newStatus === 'new') {
+                        draggedTask.style.opacity = '';
+                        draggedTask.style.borderLeft = '4px solid #dc3545';
+                        const titleElement = draggedTask.querySelector('div:first-child');
+                        if (titleElement) {
+                            titleElement.style.textDecoration = '';
+                        }
+                    } else if (newStatus === 'in_progress') {
+                        draggedTask.style.opacity = '';
+                        draggedTask.style.borderLeft = '4px solid #ff9800';
+                        const titleElement = draggedTask.querySelector('div:first-child');
+                        if (titleElement) {
+                            titleElement.style.textDecoration = '';
+                        }
+                    } else {
+                        draggedTask.style.opacity = '';
+                        const titleElement = draggedTask.querySelector('div:first-child');
+                        if (titleElement) {
+                            titleElement.style.textDecoration = '';
+                        }
+                    }
+                    
+                    // Обновляем счетчик задач в меню (если статус изменился на/с "в работе")
+                    if (newStatus === 'in_progress' || oldStatus === 'in_progress') {
+                        updateTasksCount();
+                    }
+                    
+                    // Проверяем, остались ли задачи в старой колонке
+                    const oldColumn = document.querySelector(`.kanban-column[data-status="${oldStatus}"]`);
+                    const oldColumnContent = oldColumn.querySelector('.kanban-column-content');
+                    if (oldColumnContent.children.length === 0) {
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'empty-placeholder';
+                        placeholder.style.cssText = 'text-align: center; color: #999; padding: 20px;';
+                        placeholder.textContent = 'Нет задач';
+                        oldColumnContent.appendChild(placeholder);
+                    }
+                } else {
+                    // В случае ошибки возвращаем карточку обратно
+                    const oldColumn = document.querySelector(`.kanban-column[data-status="${oldStatus}"]`);
+                    const oldColumnContent = oldColumn.querySelector('.kanban-column-content');
+                    draggedTask.dataset.status = oldStatus;
+                    oldColumnContent.appendChild(draggedTask);
+                    alert('Ошибка при обновлении статуса задачи');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // В случае ошибки возвращаем карточку обратно
+                const oldColumn = document.querySelector(`.kanban-column[data-status="${oldStatus}"]`);
+                const oldColumnContent = oldColumn.querySelector('.kanban-column-content');
+                draggedTask.dataset.status = oldStatus;
+                oldColumnContent.appendChild(draggedTask);
+                alert('Ошибка при обновлении статуса задачи');
+            });
+            
+            draggedTask = null;
+            draggedFromColumn = null;
+        });
+    });
+});
+</script>
+
+<style>
+.kanban-column.drag-over {
+    background: #e3f2fd !important;
+    border: 2px dashed #2196F3;
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+    transition: all 0.2s ease;
+}
+
+.task-card[draggable="true"] {
+    user-select: none;
+}
+</style>
+{% endblock %}

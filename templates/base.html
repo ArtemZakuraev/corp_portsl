@@ -1,0 +1,1329 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{{ portal_settings.site_name }}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {% if portal_settings.favicon %}
+        <link rel="icon" type="image/png" href="{{ portal_settings.favicon.url }}">
+    {% endif %}
+
+    <!-- Современные шрифты -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    {% comment %}Переопределение цветовой схемы для текущего пользователя{% endcomment %}
+    <style>
+        :root {
+        {% if user_theme.mode == "dark" %}
+            --cp-bg: #0f172a;
+            --cp-bg-elevated: #1e293b;
+            --cp-text-main: #f1f5f9;
+            --cp-text-muted: #94a3b8;
+            --cp-text-light: #64748b;
+            --cp-border: #334155;
+            --cp-border-light: #1e293b;
+            --cp-sidebar-bg: #1e293b;
+            --cp-sidebar-border: #334155;
+            --cp-sidebar-hover: #334155;
+            --cp-sidebar-active: #475569;
+            --cp-gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        {% endif %}
+        {% if user_theme.mode == "custom" %}
+            {% if user_theme.primary_color %}
+                --cp-accent: {{ user_theme.primary_color }};
+                --cp-gradient-primary: linear-gradient(135deg, {{ user_theme.primary_color }} 0%, {{ user_theme.primary_color }}dd 100%);
+            {% endif %}
+            {% if user_theme.sidebar_bg_color %}
+                --cp-sidebar-bg: {{ user_theme.sidebar_bg_color }};
+            {% endif %}
+        {% endif %}
+        }
+        
+        {% if user_sidebar_settings.custom_enabled %}
+        .cp-main {
+            grid-template-columns: {{ user_sidebar_settings.width }}px minmax(0, 1fr) !important;
+        }
+        .cp-sidebar {
+            height: {{ user_sidebar_settings.height }} !important;
+        }
+        {% endif %}
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="cp-layout">
+    <header class="cp-header">
+        <div class="cp-header-left">
+            <a href="{% url 'home' %}" class="cp-logo-link">
+                {% if portal_settings.logo %}
+                    <img src="{{ portal_settings.logo.url }}" alt="{{ portal_settings.site_name }}" class="cp-logo-img">
+                {% else %}
+                    <div class="cp-logo-placeholder">
+                        <i class="fas fa-building"></i>
+                    </div>
+                {% endif %}
+            </a>
+            <div class="cp-product-title">
+                <div class="cp-product-name">{{ portal_settings.site_name }}</div>
+            </div>
+        </div>
+        <div class="cp-header-center">
+            <nav class="cp-header-nav">
+                <a href="{% url 'home' %}" class="cp-header-nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                    <i class="fas fa-home"></i>
+                    <span>Лента</span>
+                </a>
+                <a href="{% url 'chats' %}" class="cp-header-nav-link {% if request.resolver_match.url_name == 'chats' %}active{% endif %}">
+                    <i class="fas fa-comments"></i>
+                    <span>Чаты</span>
+                </a>
+                <a href="{% url 'employees' %}" class="cp-header-nav-link {% if request.resolver_match.url_name == 'employees' %}active{% endif %}">
+                    <i class="fas fa-users"></i>
+                    <span>Сотрудники</span>
+                </a>
+            </nav>
+        </div>
+        <div class="cp-header-right">
+            {% if request.user.is_authenticated %}
+                <div class="cp-header-actions">
+                    <button class="cp-header-icon-btn" title="Поиск" onclick="openSearchModal()" style="position: relative;">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <a href="{% url 'meetings' %}" class="cp-header-icon-btn" title="Мои встречи" style="position: relative; text-decoration: none; color: inherit; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-calendar"></i>
+                        {% if user_meetings_today_count > 0 %}
+                            <span class="cp-header-badge">{{ user_meetings_today_count }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'chats' %}" class="cp-header-icon-btn" title="Уведомления" style="position: relative; text-decoration: none; color: inherit; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-bell"></i>
+                        {% if user_chat_notifications_count > 0 %}
+                            <span class="cp-header-badge">{{ user_chat_notifications_count }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'about' %}" class="cp-header-icon-btn" title="О системе" style="text-decoration: none; color: inherit; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-question-circle"></i>
+                    </a>
+                </div>
+                <a href="{% url 'profile' %}" class="cp-user-profile" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                    {% if request.user.profile.photo %}
+                        <img src="{{ request.user.profile.photo.url }}" alt="{{ request.user.get_full_name|default:request.user.username }}" class="cp-user-avatar">
+                    {% else %}
+                        <div class="cp-user-avatar-placeholder">
+                            {{ request.user.first_name|first|default:request.user.username|first|upper }}
+                        </div>
+                    {% endif %}
+                    <div class="cp-user-dropdown">
+                        <span class="cp-user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="cp-link-muted">Войти</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="cp-main">
+        <nav class="cp-sidebar" id="sidebar-nav">
+            <!-- Ресайзер для изменения ширины -->
+            <div class="cp-sidebar-resizer" id="sidebar-resizer" style="position: absolute; right: 0; top: 0; width: 4px; height: 100%; cursor: ew-resize; z-index: 10; background: transparent; display: none; transition: background 0.2s ease;"></div>
+            <div class="cp-sidebar-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Поиск" class="cp-sidebar-search-input">
+                <button class="cp-sidebar-search-clear" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <ul class="cp-menu" id="sidebar-menu">
+                <li class="cp-menu-section-title" data-menu-id="section-workplace">Рабочее место</li>
+                <li data-menu-id="tasks" data-menu-type="item" draggable="true" class="menu-item-draggable">
+                    <a href="{% url 'tasks' %}" class="cp-menu-link">
+                        <i class="fas fa-tasks"></i>
+                        <span>Мои задачи</span>
+                        {% if user_tasks_count > 0 %}
+                            <span class="cp-menu-badge">{{ user_tasks_count }}</span>
+                        {% endif %}
+                        <button class="cp-menu-favorite-btn" onclick="toggleFavorite('tasks', event)" title="Добавить в избранное">
+                            <i class="far fa-star"></i>
+                        </button>
+                    </a>
+                </li>
+                <li data-menu-id="meetings" data-menu-type="item" draggable="true" class="menu-item-draggable">
+                    <a href="{% url 'meetings' %}" class="cp-menu-link">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Мои встречи</span>
+                        <button class="cp-menu-favorite-btn" onclick="toggleFavorite('meetings', event)" title="Добавить в избранное">
+                            <i class="far fa-star"></i>
+                        </button>
+                    </a>
+                </li>
+                
+                <li class="cp-menu-section-title" data-menu-id="section-organization">Организация</li>
+                <li data-menu-id="employees" data-menu-type="item" draggable="true" class="menu-item-draggable">
+                    <a href="{% url 'employees' %}" class="cp-menu-link">
+                        <i class="fas fa-users"></i>
+                        <span>Сотрудники</span>
+                        <button class="cp-menu-favorite-btn" onclick="toggleFavorite('employees', event)" title="Добавить в избранное">
+                            <i class="far fa-star"></i>
+                        </button>
+                    </a>
+                </li>
+                <li data-menu-id="org_chart" data-menu-type="item" draggable="true" class="menu-item-draggable">
+                    <a href="{% url 'org_chart' %}" class="cp-menu-link">
+                        <i class="fas fa-sitemap"></i>
+                        <span>Оргструктура</span>
+                        <button class="cp-menu-favorite-btn" onclick="toggleFavorite('org_chart', event)" title="Добавить в избранное">
+                            <i class="far fa-star"></i>
+                        </button>
+                    </a>
+                </li>
+                {% if request.user.is_staff or request.user.is_superuser %}
+                <li data-menu-id="units" data-menu-type="item" draggable="true" class="menu-item-draggable">
+                    <a href="{% url 'units' %}" class="cp-menu-link">
+                        <i class="fas fa-building"></i>
+                        <span>Отделы и департаменты</span>
+                        <button class="cp-menu-favorite-btn" onclick="toggleFavorite('units', event)" title="Добавить в избранное">
+                            <i class="far fa-star"></i>
+                        </button>
+                    </a>
+                </li>
+                {% endif %}
+
+                <li class="cp-menu-section-title" data-menu-id="section-communications">Коммуникации</li>
+                <li data-menu-id="news_list" data-menu-type="item" draggable="true" class="menu-item-draggable">
+                    <a href="{% url 'news_list' %}" class="cp-menu-link">
+                        <i class="fas fa-newspaper"></i>
+                        <span>Новости</span>
+                        <button class="cp-menu-favorite-btn" onclick="toggleFavorite('news_list', event)" title="Добавить в избранное">
+                            <i class="far fa-star"></i>
+                        </button>
+                    </a>
+                </li>
+                <li data-menu-id="chats" data-menu-type="item" draggable="true" class="menu-item-draggable">
+                    <a href="{% url 'chats' %}" class="cp-menu-link">
+                        <i class="fas fa-comments"></i>
+                        <span>Чаты</span>
+                        <button class="cp-menu-favorite-btn" onclick="toggleFavorite('chats', event)" title="Добавить в избранное">
+                            <i class="far fa-star"></i>
+                        </button>
+                    </a>
+                </li>
+
+                <li class="cp-menu-section-title" data-menu-id="section-documents">Документы и процессы</li>
+                <li data-menu-id="wiki_list" data-menu-type="item" draggable="true" class="menu-item-draggable">
+                    <a href="{% url 'wiki_list' %}" class="cp-menu-link">
+                        <i class="fas fa-book"></i>
+                        <span>База знаний</span>
+                        <button class="cp-menu-favorite-btn" onclick="toggleFavorite('wiki_list', event)" title="Добавить в избранное">
+                            <i class="far fa-star"></i>
+                        </button>
+                    </a>
+                </li>
+                <li data-menu-id="documents_list" data-menu-type="item" draggable="true" class="menu-item-draggable">
+                    <a href="{% url 'documents_list' %}" class="cp-menu-link">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Документы</span>
+                        <button class="cp-menu-favorite-btn" onclick="toggleFavorite('documents_list', event)" title="Добавить в избранное">
+                            <i class="far fa-star"></i>
+                        </button>
+                    </a>
+                </li>
+                <li data-menu-id="processes" data-menu-type="item" draggable="true" class="menu-item-draggable">
+                    <a href="{% url 'processes' %}" class="cp-menu-link">
+                        <i class="fas fa-project-diagram"></i>
+                        <span>Бизнес-процессы</span>
+                        <button class="cp-menu-favorite-btn" onclick="toggleFavorite('processes', event)" title="Добавить в избранное">
+                            <i class="far fa-star"></i>
+                        </button>
+                    </a>
+                </li>
+                <li data-menu-id="hr_services" data-menu-type="item" draggable="true" class="menu-item-draggable">
+                    <a href="{% url 'hr_services' %}" class="cp-menu-link">
+                        <i class="fas fa-user-tie"></i>
+                        <span>HR-сервисы</span>
+                        <button class="cp-menu-favorite-btn" onclick="toggleFavorite('hr_services', event)" title="Добавить в избранное">
+                            <i class="far fa-star"></i>
+                        </button>
+                    </a>
+                </li>
+
+                {% if request.user.is_staff or request.user.is_superuser %}
+                    <li class="cp-menu-section-title" data-menu-id="section-admin">Администрирование</li>
+                    <li data-menu-id="admin" data-menu-type="item" draggable="true" class="menu-item-draggable">
+                        <a href="/admin/" class="cp-menu-link">
+                            <i class="fas fa-cog"></i>
+                            <span>Админ-панель</span>
+                            <button class="cp-menu-favorite-btn" onclick="toggleFavorite('admin', event)" title="Добавить в избранное">
+                                <i class="far fa-star"></i>
+                            </button>
+                        </a>
+                    </li>
+                    <li data-menu-id="portal_settings" data-menu-type="item" draggable="true" class="menu-item-draggable">
+                        <a href="{% url 'portal_settings_page' %}" class="cp-menu-link">
+                            <i class="fas fa-sliders-h"></i>
+                            <span>Настройки портала</span>
+                            <button class="cp-menu-favorite-btn" onclick="toggleFavorite('portal_settings', event)" title="Добавить в избранное">
+                                <i class="far fa-star"></i>
+                            </button>
+                        </a>
+                    </li>
+                    <li data-menu-id="user_roles" data-menu-type="item" draggable="true" class="menu-item-draggable">
+                        <a href="{% url 'user_roles' %}" class="cp-menu-link">
+                            <i class="fas fa-user-shield"></i>
+                            <span>Пользователи и роли</span>
+                            <button class="cp-menu-favorite-btn" onclick="toggleFavorite('user_roles', event)" title="Добавить в избранное">
+                                <i class="far fa-star"></i>
+                            </button>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+            <div class="cp-sidebar-footer">
+                <button class="cp-sidebar-footer-btn" id="favorites-toggle-btn" title="Избранное" onclick="toggleFavoritesMode()">
+                    <i class="fas fa-star"></i>
+                </button>
+                <button class="cp-sidebar-footer-btn" title="Список">
+                    <i class="fas fa-list"></i>
+                </button>
+                <button class="cp-sidebar-footer-btn" title="Просмотр">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button class="cp-sidebar-footer-btn" id="menu-settings-btn" title="Настройки" onclick="openMenuSettings()">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+            
+            <!-- Модальное окно настроек меню -->
+            <div id="menu-settings-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+                <div style="background: white; border-radius: 8px; padding: 24px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+                    <h2 style="margin-top: 0;">Настройки меню</h2>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Ширина меню (px):</label>
+                        <input type="range" id="sidebar-width-slider" min="200" max="500" value="280" style="width: 100%;">
+                        <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                            <span>200px</span>
+                            <span id="sidebar-width-value">280px</span>
+                            <span>500px</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Высота меню (px):</label>
+                        <input type="range" id="sidebar-height-slider" min="400" max="1200" value="600" style="width: 100%;">
+                        <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                            <span>400px</span>
+                            <span id="sidebar-height-value">600px</span>
+                            <span>1200px</span>
+                        </div>
+                        <p style="font-size: 12px; color: #666; margin-top: 8px;">Или введите значение вручную:</p>
+                        <input type="text" id="sidebar-height-input" value="calc(100vh - 64px)" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-top: 4px;" placeholder="Например: 600px или calc(100vh - 64px)">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="sidebar-custom-enabled" onchange="toggleSidebarCustomEnabled()">
+                            <span>Включить настройку размера</span>
+                        </label>
+                    </div>
+                    <div style="margin-bottom: 16px; padding-top: 16px; border-top: 1px solid #eee;">
+                        <h3 style="margin-top: 0; font-size: 14px; font-weight: 600;">Управление пунктами меню</h3>
+                        <p style="font-size: 12px; color: #666; margin-bottom: 12px;">
+                            Перетаскивайте пункты меню для изменения порядка. Наведите на пункт меню и нажмите на звездочку, чтобы добавить в избранное.
+                        </p>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button onclick="resetMenuOrder()" style="padding: 6px 12px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 12px;">Сбросить порядок</button>
+                            <button onclick="showAllMenuItems()" style="padding: 6px 12px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 12px;">Показать все</button>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                        <button onclick="closeMenuSettings()" style="padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">Отмена</button>
+                        <button onclick="saveMenuSettings()" style="padding: 8px 16px; background: var(--cp-accent); color: white; border: none; border-radius: 4px; cursor: pointer;">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="cp-content">
+            <div class="cp-breadcrumbs">
+                {% block breadcrumbs %}{% endblock %}
+            </div>
+            <section class="cp-content-inner">
+                {% block content %}{% endblock %}
+            </section>
+        </main>
+    </div>
+</div>
+
+<!-- Модальное окно поиска -->
+<div id="searchModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="cp-card" style="width: 90%; max-width: 600px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="padding: 16px; border-bottom: 1px solid var(--cp-border-light); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Поиск по разделам</h3>
+            <button onclick="closeSearchModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--cp-text-muted);">&times;</button>
+        </div>
+        <div style="padding: 16px; border-bottom: 1px solid var(--cp-border-light);">
+            <input type="text" id="searchInput" placeholder="Введите название раздела..." 
+                   style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--cp-border);"
+                   onkeyup="filterSections()">
+        </div>
+        <div style="flex: 1; overflow-y: auto; padding: 8px;">
+            <div id="sectionsList">
+                <a href="{% url 'home' %}" class="search-section-item" data-name="Лента Рабочий стол">
+                    <i class="fas fa-home"></i>
+                    <span>Лента</span>
+                </a>
+                <a href="{% url 'tasks' %}" class="search-section-item" data-name="Мои задачи Задачи">
+                    <i class="fas fa-tasks"></i>
+                    <span>Мои задачи</span>
+                </a>
+                <a href="{% url 'meetings' %}" class="search-section-item" data-name="Мои встречи Встречи Календарь">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Мои встречи</span>
+                </a>
+                <a href="{% url 'employees' %}" class="search-section-item" data-name="Сотрудники">
+                    <i class="fas fa-users"></i>
+                    <span>Сотрудники</span>
+                </a>
+                <a href="{% url 'org_chart' %}" class="search-section-item" data-name="Оргструктура Организационная структура">
+                    <i class="fas fa-sitemap"></i>
+                    <span>Оргструктура</span>
+                </a>
+                {% if request.user.is_staff or request.user.is_superuser %}
+                <a href="{% url 'units' %}" class="search-section-item" data-name="Отделы Департаменты">
+                    <i class="fas fa-building"></i>
+                    <span>Отделы и департаменты</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'news_list' %}" class="search-section-item" data-name="Новости">
+                    <i class="fas fa-newspaper"></i>
+                    <span>Новости</span>
+                </a>
+                <a href="{% url 'chats' %}" class="search-section-item" data-name="Чаты Сообщения">
+                    <i class="fas fa-comments"></i>
+                    <span>Чаты</span>
+                </a>
+                <a href="{% url 'wiki_list' %}" class="search-section-item" data-name="База знаний Wiki">
+                    <i class="fas fa-book"></i>
+                    <span>База знаний</span>
+                </a>
+                <a href="{% url 'documents_list' %}" class="search-section-item" data-name="Документы">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Документы</span>
+                </a>
+                <a href="{% url 'vacations' %}" class="search-section-item" data-name="Отпуска График отпусков Планирование отпусков">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>График отпусков</span>
+                </a>
+                {% if request.user.is_staff or request.user.is_superuser %}
+                    <a href="/admin/" class="search-section-item" data-name="Админ-панель Администрирование">
+                        <i class="fas fa-cog"></i>
+                        <span>Админ-панель</span>
+                    </a>
+                    <a href="{% url 'portal_settings_page' %}" class="search-section-item" data-name="Настройки портала">
+                        <i class="fas fa-sliders-h"></i>
+                        <span>Настройки портала</span>
+                    </a>
+                    <a href="{% url 'user_roles' %}" class="search-section-item" data-name="Пользователи Роли">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Пользователи и роли</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openSearchModal() {
+    document.getElementById('searchModal').style.display = 'flex';
+    document.getElementById('searchInput').focus();
+}
+
+function closeSearchModal() {
+    document.getElementById('searchModal').style.display = 'none';
+    document.getElementById('searchInput').value = '';
+    filterSections();
+}
+
+function filterSections() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const sections = document.querySelectorAll('.search-section-item');
+    sections.forEach(section => {
+        const name = section.getAttribute('data-name').toLowerCase();
+        if (name.includes(search)) {
+            section.style.display = 'flex';
+        } else {
+            section.style.display = 'none';
+        }
+    });
+}
+
+// Закрытие модального окна при клике вне его
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('searchModal');
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            closeSearchModal();
+        }
+    });
+    
+    // Закрытие по Escape
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.style.display === 'flex') {
+            closeSearchModal();
+        }
+    });
+});
+</script>
+
+<style>
+.search-section-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--cp-text-main);
+    margin-bottom: 4px;
+    transition: background 0.2s;
+}
+
+.search-section-item:hover {
+    background: var(--cp-sidebar-hover);
+    text-decoration: none;
+    color: var(--cp-text-main);
+}
+
+.search-section-item i {
+    width: 20px;
+    text-align: center;
+    color: var(--cp-text-muted);
+}
+
+.cp-header-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #f44336;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    border: 2px solid var(--cp-bg);
+}
+</style>
+
+{% block extra_body %}{% endblock %}
+
+<script>
+// Настройки меню
+let menuSettings = {};
+try {
+    const settingsJson = {{ user_menu_settings.items_settings|safe }};
+    if (settingsJson && settingsJson !== 'None' && settingsJson !== '') {
+        menuSettings = typeof settingsJson === 'string' ? JSON.parse(settingsJson) : settingsJson;
+    }
+} catch(e) {
+    console.error('Error parsing menu settings:', e);
+    menuSettings = {};
+}
+let showFavoritesOnly = {% if user_menu_settings.show_favorites_only %}true{% else %}false{% endif %};
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMenuSettings();
+    updateFavoriteIcons();
+    applyFavoritesFilter();
+    initializeResizer();
+    initializeMenuDragAndDrop();
+    
+    // Применяем сохраненные настройки сайдбара при загрузке
+    {% if user_sidebar_settings.custom_enabled %}
+    const savedWidth = {{ user_sidebar_settings.width }};
+    const savedHeight = '{{ user_sidebar_settings.height|escapejs }}';
+    // Применяем настройки сразу при загрузке
+    applySidebarSettings(savedWidth, savedHeight, true);
+    // Показываем ресайзер, если настройки включены
+    const resizer = document.getElementById('sidebar-resizer');
+    if (resizer) {
+        resizer.style.display = 'block';
+    }
+    // Обновляем слайдеры и поля ввода
+    if (document.getElementById('sidebar-height-slider')) {
+        const pxMatch = savedHeight.match(/^(\d+)px$/);
+        if (pxMatch) {
+            const pxValue = parseInt(pxMatch[1]);
+            if (pxValue >= 400 && pxValue <= 1200) {
+                document.getElementById('sidebar-height-slider').value = pxValue;
+                document.getElementById('sidebar-height-value').textContent = pxValue + 'px';
+            }
+        }
+    }
+    if (document.getElementById('sidebar-height-input')) {
+        document.getElementById('sidebar-height-input').value = savedHeight;
+    }
+    {% endif %}
+    
+    // Инициализация слайдера ширины (только обновление отображения, без применения)
+    const widthSlider = document.getElementById('sidebar-width-slider');
+    if (widthSlider) {
+        widthSlider.addEventListener('input', function() {
+            const newWidth = parseInt(this.value);
+            document.getElementById('sidebar-width-value').textContent = newWidth + 'px';
+            // НЕ применяем изменения, только обновляем отображение
+        });
+    }
+    
+    // Инициализация слайдера высоты (только обновление отображения, без применения)
+    const heightSlider = document.getElementById('sidebar-height-slider');
+    const heightInput = document.getElementById('sidebar-height-input');
+    if (heightSlider) {
+        heightSlider.addEventListener('input', function() {
+            const newHeight = parseInt(this.value);
+            const heightValue = newHeight + 'px';
+            document.getElementById('sidebar-height-value').textContent = heightValue;
+            // Обновляем текстовое поле
+            if (heightInput) {
+                heightInput.value = heightValue;
+            }
+            // НЕ применяем изменения, только обновляем отображение
+        });
+    }
+    
+    // Обработчик для текстового поля высоты (только синхронизация со слайдером)
+    if (heightInput) {
+        heightInput.addEventListener('input', function() {
+            const value = this.value.trim();
+            // Если значение в пикселях, обновляем слайдер
+            const pxMatch = value.match(/^(\d+)px$/);
+            if (pxMatch) {
+                const pxValue = parseInt(pxMatch[1]);
+                if (pxValue >= 400 && pxValue <= 1200) {
+                    if (heightSlider) {
+                        heightSlider.value = pxValue;
+                        document.getElementById('sidebar-height-value').textContent = pxValue + 'px';
+                    }
+                }
+            }
+            // НЕ применяем изменения, только синхронизируем слайдер
+        });
+    }
+});
+
+// Инициализация drag-and-drop для изменения порядка пунктов меню
+function initializeMenuDragAndDrop() {
+    const menuItems = document.querySelectorAll('.menu-item-draggable');
+    
+    menuItems.forEach(item => {
+        item.addEventListener('dragstart', function(e) {
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.outerHTML);
+            e.dataTransfer.setData('menu-id', this.getAttribute('data-menu-id'));
+        });
+        
+        item.addEventListener('dragend', function(e) {
+            this.classList.remove('dragging');
+            // Убираем все drag-over классы
+            document.querySelectorAll('.menu-item-draggable').forEach(el => {
+                el.classList.remove('drag-over');
+            });
+        });
+        
+        item.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            const dragging = document.querySelector('.dragging');
+            if (!dragging || dragging === this) return;
+            
+            const afterElement = getDragAfterElement(this.parentElement, e.clientY);
+            
+            if (afterElement == null) {
+                this.parentElement.appendChild(dragging);
+            } else {
+                this.parentElement.insertBefore(dragging, afterElement);
+            }
+        });
+        
+        item.addEventListener('dragenter', function(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        });
+        
+        item.addEventListener('dragleave', function(e) {
+            this.classList.remove('drag-over');
+        });
+        
+        item.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            // Сохраняем новый порядок
+            saveMenuOrder();
+        });
+    });
+}
+
+// Получение элемента после курсора для вставки
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.menu-item-draggable:not(.dragging)')];
+    
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+// Сохранение порядка пунктов меню
+function saveMenuOrder() {
+    const menuItems = document.querySelectorAll('.menu-item-draggable');
+    const order = [];
+    
+    menuItems.forEach((item, index) => {
+        const menuId = item.getAttribute('data-menu-id');
+        order.push(menuId);
+        
+        if (!menuSettings[menuId]) {
+            menuSettings[menuId] = {};
+        }
+        menuSettings[menuId].order = index;
+    });
+    
+    // Сохраняем настройки
+    let csrfToken = null;
+    const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfInput) {
+        csrfToken = csrfInput.value;
+    } else {
+        const name = 'csrftoken';
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [key, value] = cookie.trim().split('=');
+            if (key === name) {
+                csrfToken = decodeURIComponent(value);
+                break;
+            }
+        }
+    }
+    
+    fetch('/api/menu/settings/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            menu_items_settings: menuSettings
+        })
+    })
+    .catch(error => {
+        console.error('Error saving menu order:', error);
+    });
+}
+
+// Инициализация ресайзера для изменения размера сайдбара
+function initializeResizer() {
+    const resizer = document.getElementById('sidebar-resizer');
+    const sidebar = document.getElementById('sidebar-nav');
+    const main = document.querySelector('.cp-main');
+    
+    if (!resizer || !sidebar || !main) return;
+    
+    let isResizing = false;
+    let startX = 0;
+    let startWidth = 0;
+    
+    resizer.addEventListener('mousedown', function(e) {
+        isResizing = true;
+        startX = e.clientX;
+        startWidth = sidebar.offsetWidth;
+        document.body.style.cursor = 'ew-resize';
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+        e.stopPropagation();
+    });
+    
+    document.addEventListener('mousemove', function(e) {
+        if (!isResizing) return;
+        
+        const diff = e.clientX - startX;
+        let newWidth = startWidth + diff;
+        
+        // Ограничения
+        if (newWidth < 200) newWidth = 200;
+        if (newWidth > 500) newWidth = 500;
+        
+        sidebar.style.width = newWidth + 'px';
+        main.style.gridTemplateColumns = newWidth + 'px minmax(0, 1fr)';
+        
+        // Обновляем слайдер в модальном окне, если оно открыто
+        const slider = document.getElementById('sidebar-width-slider');
+        const widthValue = document.getElementById('sidebar-width-value');
+        if (slider) {
+            slider.value = newWidth;
+        }
+        if (widthValue) {
+            widthValue.textContent = newWidth + 'px';
+        }
+    });
+    
+    document.addEventListener('mouseup', function() {
+        if (isResizing) {
+            isResizing = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            
+            // Сохраняем настройки автоматически при изменении через ресайзер
+            const finalWidth = sidebar.offsetWidth;
+            saveSidebarSize(finalWidth, true); // true = не перезагружать страницу
+        }
+    });
+}
+
+// Сохранение размера сайдбара (используется только при изменении через ресайзер)
+function saveSidebarSize(width, skipReload = false) {
+    let csrfToken = null;
+    const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfInput) {
+        csrfToken = csrfInput.value;
+    } else {
+        const name = 'csrftoken';
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [key, value] = cookie.trim().split('=');
+            if (key === name) {
+                csrfToken = decodeURIComponent(value);
+                break;
+            }
+        }
+    }
+    
+    // Получаем текущую высоту
+    const heightInput = document.getElementById('sidebar-height-input');
+    const heightSlider = document.getElementById('sidebar-height-slider');
+    let height;
+    if (heightInput && heightInput.value.trim()) {
+        height = heightInput.value.trim();
+    } else if (heightSlider) {
+        height = heightSlider.value + 'px';
+    } else {
+        height = 'calc(100vh - 64px)';
+    }
+    
+    fetch('/api/menu/settings/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            sidebar_width: width,
+            sidebar_height: height,
+            sidebar_custom_enabled: true
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Применяем настройки сразу при изменении через ресайзер
+            applySidebarSettings(width, height, true);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving sidebar size:', error);
+    });
+}
+
+
+// Инициализация настроек меню из профиля
+function initializeMenuSettings() {
+    {% if user_sidebar_settings.custom_enabled %}
+    const width = {{ user_sidebar_settings.width }};
+    const height = '{{ user_sidebar_settings.height|escapejs }}';
+    const enabled = true;
+    
+    if (document.getElementById('sidebar-width-slider')) {
+        document.getElementById('sidebar-width-slider').value = width;
+        document.getElementById('sidebar-width-value').textContent = width + 'px';
+    }
+    if (document.getElementById('sidebar-height-input')) {
+        document.getElementById('sidebar-height-input').value = height;
+        // Пытаемся извлечь значение в пикселях для слайдера
+        const pxMatch = height.match(/^(\d+)px$/);
+        if (pxMatch) {
+            const pxValue = parseInt(pxMatch[1]);
+            if (pxValue >= 400 && pxValue <= 1200) {
+                if (document.getElementById('sidebar-height-slider')) {
+                    document.getElementById('sidebar-height-slider').value = pxValue;
+                    document.getElementById('sidebar-height-value').textContent = pxValue + 'px';
+                }
+            }
+        } else {
+            // Если не в пикселях, устанавливаем значение по умолчанию для слайдера
+            if (document.getElementById('sidebar-height-slider')) {
+                const defaultHeight = 600;
+                document.getElementById('sidebar-height-slider').value = defaultHeight;
+                document.getElementById('sidebar-height-value').textContent = defaultHeight + 'px';
+            }
+        }
+    }
+    if (document.getElementById('sidebar-custom-enabled')) {
+        document.getElementById('sidebar-custom-enabled').checked = enabled;
+    }
+    {% else %}
+    // Если настройки не включены, устанавливаем значения по умолчанию
+    if (document.getElementById('sidebar-width-slider')) {
+        document.getElementById('sidebar-width-slider').value = 280;
+        document.getElementById('sidebar-width-value').textContent = '280px';
+    }
+    if (document.getElementById('sidebar-height-slider')) {
+        document.getElementById('sidebar-height-slider').value = 600;
+        document.getElementById('sidebar-height-value').textContent = '600px';
+    }
+    if (document.getElementById('sidebar-height-input')) {
+        document.getElementById('sidebar-height-input').value = 'calc(100vh - 64px)';
+    }
+    if (document.getElementById('sidebar-custom-enabled')) {
+        document.getElementById('sidebar-custom-enabled').checked = false;
+    }
+    {% endif %}
+}
+
+// Открытие модального окна настроек
+function openMenuSettings() {
+    const modal = document.getElementById('menu-settings-modal');
+    const resizer = document.getElementById('sidebar-resizer');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+    // Показываем ресайзер при открытии настроек и делаем его видимым
+    if (resizer) {
+        resizer.style.display = 'block';
+        resizer.style.background = 'rgba(99, 102, 241, 0.2)';
+        resizer.style.width = '6px';
+    }
+    // Инициализируем ресайзер, если еще не инициализирован
+    if (typeof initializeResizer === 'function') {
+        initializeResizer();
+    }
+}
+
+// Закрытие модального окна настроек
+function closeMenuSettings() {
+    const modal = document.getElementById('menu-settings-modal');
+    const resizer = document.getElementById('sidebar-resizer');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    // Скрываем ресайзер при закрытии настроек, но оставляем его функциональным если настройки включены
+    if (resizer) {
+        const enabled = document.getElementById('sidebar-custom-enabled')?.checked;
+        if (!enabled) {
+            resizer.style.display = 'none';
+            resizer.style.background = 'transparent';
+            resizer.style.width = '4px';
+        } else {
+            // Оставляем ресайзер видимым, но менее заметным
+            resizer.style.background = 'transparent';
+            resizer.style.width = '4px';
+        }
+    }
+}
+
+// Сохранение настроек меню
+function saveMenuSettings() {
+    const width = parseInt(document.getElementById('sidebar-width-slider').value);
+    const heightInput = document.getElementById('sidebar-height-input');
+    const heightSlider = document.getElementById('sidebar-height-slider');
+    
+    // Приоритет: текстовое поле, если заполнено, иначе слайдер
+    let height;
+    if (heightInput && heightInput.value.trim()) {
+        height = heightInput.value.trim();
+    } else if (heightSlider) {
+        height = heightSlider.value + 'px';
+    } else {
+        height = 'calc(100vh - 64px)';
+    }
+    
+    const enabled = document.getElementById('sidebar-custom-enabled').checked;
+    
+    // Получаем CSRF токен
+    let csrfToken = null;
+    const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfInput) {
+        csrfToken = csrfInput.value;
+    } else {
+        const name = 'csrftoken';
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [key, value] = cookie.trim().split('=');
+            if (key === name) {
+                csrfToken = decodeURIComponent(value);
+                break;
+            }
+        }
+    }
+    
+    fetch('/api/menu/settings/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            sidebar_width: width,
+            sidebar_height: height,
+            sidebar_custom_enabled: enabled
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Применяем настройки сразу после сохранения
+            applySidebarSettings(width, height, enabled);
+            closeMenuSettings();
+            // Показываем уведомление об успешном сохранении
+            alert('Настройки меню успешно сохранены и применены!');
+        } else {
+            alert('Ошибка при сохранении настроек');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving menu settings:', error);
+        alert('Ошибка при сохранении настроек');
+    });
+}
+
+// Переключение настройки размера сайдбара (только предпросмотр, без сохранения)
+function toggleSidebarCustomEnabled() {
+    const checkbox = document.getElementById('sidebar-custom-enabled');
+    const enabled = checkbox.checked;
+    const width = parseInt(document.getElementById('sidebar-width-slider').value);
+    const heightInput = document.getElementById('sidebar-height-input');
+    const heightSlider = document.getElementById('sidebar-height-slider');
+    const height = heightInput && heightInput.value.trim() ? heightInput.value.trim() : (heightSlider ? heightSlider.value + 'px' : 'calc(100vh - 64px)');
+    
+    // Только предпросмотр, без сохранения
+    applySidebarSettings(width, height, enabled);
+}
+
+// Применение настроек сайдбара
+function applySidebarSettings(width, height, enabled) {
+    const main = document.querySelector('.cp-main');
+    const sidebar = document.querySelector('.cp-sidebar');
+    const resizer = document.getElementById('sidebar-resizer');
+    
+    if (enabled) {
+        if (main) {
+            main.style.gridTemplateColumns = width + 'px minmax(0, 1fr)';
+        }
+        if (sidebar) {
+            sidebar.style.width = width + 'px';
+            if (height) {
+                sidebar.style.height = height;
+            }
+        }
+        // Показываем ресайзер, если настройки включены
+        if (resizer) {
+            resizer.style.display = 'block';
+        }
+    } else {
+        // Сбрасываем настройки
+        if (main) {
+            main.style.gridTemplateColumns = '';
+        }
+        if (sidebar) {
+            sidebar.style.width = '';
+            sidebar.style.height = '';
+        }
+        // Скрываем ресайзер
+        if (resizer) {
+            resizer.style.display = 'none';
+            resizer.style.background = 'transparent';
+            resizer.style.width = '4px';
+        }
+    }
+}
+
+// Переключение избранного для пункта меню
+function toggleFavorite(menuId, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
+    // Получаем CSRF токен
+    let csrfToken = null;
+    const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfInput) {
+        csrfToken = csrfInput.value;
+    } else {
+        const name = 'csrftoken';
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [key, value] = cookie.trim().split('=');
+            if (key === name) {
+                csrfToken = decodeURIComponent(value);
+                break;
+            }
+        }
+    }
+    
+    fetch('/api/menu/favorite/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            menu_id: menuId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Обновляем иконку
+            const menuItem = document.querySelector(`[data-menu-id="${menuId}"]`);
+            if (menuItem) {
+                const favoriteBtn = menuItem.querySelector('.cp-menu-favorite-btn');
+                const icon = favoriteBtn.querySelector('i');
+                if (data.favorite) {
+                    icon.className = 'fas fa-star';
+                    favoriteBtn.title = 'Удалить из избранного';
+                } else {
+                    icon.className = 'far fa-star';
+                    favoriteBtn.title = 'Добавить в избранное';
+                }
+            }
+            
+            // Обновляем настройки
+            if (!menuSettings[menuId]) {
+                menuSettings[menuId] = {};
+            }
+            menuSettings[menuId].favorite = data.favorite;
+            
+            // Применяем фильтр избранного, если он активен
+            if (showFavoritesOnly) {
+                applyFavoritesFilter();
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error toggling favorite:', error);
+    });
+}
+
+// Обновление иконок избранного
+function updateFavoriteIcons() {
+    const menuItems = document.querySelectorAll('[data-menu-id]');
+    menuItems.forEach(item => {
+        const menuId = item.getAttribute('data-menu-id');
+        const favoriteBtn = item.querySelector('.cp-menu-favorite-btn');
+        if (favoriteBtn && menuSettings[menuId] && menuSettings[menuId].favorite) {
+            const icon = favoriteBtn.querySelector('i');
+            icon.className = 'fas fa-star';
+            favoriteBtn.title = 'Удалить из избранного';
+        }
+    });
+}
+
+// Переключение режима избранного
+function toggleFavoritesMode() {
+    showFavoritesOnly = !showFavoritesOnly;
+    
+    // Получаем CSRF токен
+    let csrfToken = null;
+    const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfInput) {
+        csrfToken = csrfInput.value;
+    } else {
+        const name = 'csrftoken';
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [key, value] = cookie.trim().split('=');
+            if (key === name) {
+                csrfToken = decodeURIComponent(value);
+                break;
+            }
+        }
+    }
+    
+    fetch('/api/menu/settings/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            menu_show_favorites_only: showFavoritesOnly
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            applyFavoritesFilter();
+            // Обновляем иконку кнопки
+            const btn = document.getElementById('favorites-toggle-btn');
+            if (btn) {
+                const icon = btn.querySelector('i');
+                if (showFavoritesOnly) {
+                    icon.style.color = '#ffc107';
+                } else {
+                    icon.style.color = '';
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error toggling favorites mode:', error);
+    });
+}
+
+// Сброс порядка меню
+function resetMenuOrder() {
+    if (confirm('Вы уверены, что хотите сбросить порядок пунктов меню?')) {
+        menuSettings = {};
+        // Перезагружаем страницу
+        location.reload();
+    }
+}
+
+// Показать все пункты меню
+function showAllMenuItems() {
+    const menuItems = document.querySelectorAll('[data-menu-type="item"]');
+    menuItems.forEach(item => {
+        item.style.display = '';
+    });
+    const sections = document.querySelectorAll('.cp-menu-section-title');
+    sections.forEach(section => {
+        section.style.display = '';
+    });
+}
+
+// Применение фильтра избранного
+function applyFavoritesFilter() {
+    const menuItems = document.querySelectorAll('[data-menu-type="item"]');
+    menuItems.forEach(item => {
+        const menuId = item.getAttribute('data-menu-id');
+        const isFavorite = menuSettings[menuId] && menuSettings[menuId].favorite;
+        
+        if (showFavoritesOnly) {
+            if (isFavorite) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        } else {
+            item.style.display = '';
+        }
+    });
+    
+    // Скрываем/показываем разделы в зависимости от видимости пунктов
+    const sections = document.querySelectorAll('.cp-menu-section-title');
+    sections.forEach(section => {
+        const sectionId = section.getAttribute('data-menu-id');
+        let hasVisibleItems = false;
+        
+        // Ищем пункты после этого раздела до следующего раздела
+        let nextElement = section.nextElementSibling;
+        while (nextElement && !nextElement.classList.contains('cp-menu-section-title')) {
+            if (nextElement.getAttribute('data-menu-type') === 'item') {
+                if (nextElement.style.display !== 'none') {
+                    hasVisibleItems = true;
+                    break;
+                }
+            }
+            nextElement = nextElement.nextElementSibling;
+        }
+        
+        if (showFavoritesOnly && !hasVisibleItems) {
+            section.style.display = 'none';
+        } else {
+            section.style.display = '';
+        }
+    });
+}
+</script>
+
+<style>
+.cp-menu-favorite-btn {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: var(--cp-text-muted);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.cp-menu-link:hover .cp-menu-favorite-btn {
+    opacity: 1;
+}
+
+.cp-menu-favorite-btn:hover {
+    color: #ffc107;
+}
+
+.cp-menu-favorite-btn i.fas.fa-star {
+    color: #ffc107;
+}
+
+#menu-settings-modal {
+    display: flex;
+}
+
+.cp-sidebar-resizer:hover {
+    background: rgba(99, 102, 241, 0.3) !important;
+}
+
+.cp-sidebar-resizer:active {
+    background: rgba(99, 102, 241, 0.5) !important;
+}
+
+.menu-item-draggable {
+    cursor: move;
+}
+
+.menu-item-draggable.dragging {
+    opacity: 0.5;
+}
+
+.menu-item-draggable.drag-over {
+    border-top: 2px solid var(--cp-accent);
+}
+</style>
+
+</body>
+</html>
+
+

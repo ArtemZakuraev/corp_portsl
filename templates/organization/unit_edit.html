@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование отдела — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Организация / Отделы и департаменты / Редактирование отдела
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">Редактирование отдела: {{ unit.name }}</h1>
+<p class="cp-page-subtitle">
+    Измените название, руководителя или состав сотрудников отдела.
+</p>
+
+<div class="cp-dashboard-grid">
+    <section class="cp-card">
+        <header class="cp-card-header">
+            <div>
+                <div class="cp-card-title">Основная информация</div>
+                <div class="cp-card-subtitle">Название и руководитель отдела</div>
+            </div>
+        </header>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update">
+            <p>
+                <label for="id_unit-name">Название отдела:</label>
+                {{ form.name }}
+            </p>
+            <p>
+                <label for="id_unit-unit_head">Руководитель отдела (из списка):</label>
+                {{ form.unit_head }}
+            </p>
+            <p>
+                <label for="new_unit_head_user">Или выберите сотрудника для добавления в список руководителей:</label>
+                <select name="new_unit_head_user" id="new_unit_head_user" style="width: 100%; padding: 6px;">
+                    <option value="">-- Выберите сотрудника --</option>
+                    {% for emp in all_employees %}
+                        <option value="{{ emp.id }}">
+                            {% with profile=emp.profile %}
+                                {% if profile.last_name or profile.first_name or profile.middle_name %}
+                                    {{ profile.last_name }} {{ profile.first_name }} {{ profile.middle_name }} ({{ emp.email }})
+                                {% else %}
+                                    {{ emp.get_full_name|default:emp.username }} ({{ emp.email }})
+                                {% endif %}
+                            {% endwith %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </p>
+            <button type="submit">Сохранить изменения</button>
+        </form>
+    </section>
+
+    <section class="cp-card">
+        <header class="cp-card-header">
+            <div>
+                <div class="cp-card-title">Сотрудники отдела</div>
+                <div class="cp-card-subtitle">Управление составом сотрудников</div>
+            </div>
+        </header>
+        {% if unit.employees.all %}
+            <div class="cp-table-wrapper">
+                <table class="cp-table">
+                    <thead>
+                        <tr>
+                            <th>ФИО</th>
+                            <th>Email</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for emp in unit.employees.all %}
+                            <tr>
+                                <td>
+                                    {% with profile=emp.profile %}
+                                        {% if profile.last_name or profile.first_name or profile.middle_name %}
+                                            {{ profile.last_name }} {{ profile.first_name }} {{ profile.middle_name }}
+                                        {% else %}
+                                            {{ emp.last_name }} {{ emp.first_name }}
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>{{ emp.email }}</td>
+                                <td>
+                                    <form method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="remove_employee">
+                                        <input type="hidden" name="employee_id" value="{{ emp.id }}">
+                                        <button type="submit" style="padding: 4px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                            Исключить
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="cp-link-muted">В отделе пока нет сотрудников.</p>
+        {% endif %}
+        
+        {% if available_employees %}
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                <p style="font-weight: 600; margin-bottom: 12px;">Добавить сотрудника в отдел:</p>
+                <form method="post" style="display: flex; gap: 8px; align-items: center;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_employee">
+                    <select name="employee_id" style="flex: 1; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="">Выберите сотрудника...</option>
+                        {% for emp in available_employees %}
+                            <option value="{{ emp.id }}">
+                                {% with profile=emp.profile %}
+                                    {% if profile.last_name or profile.first_name or profile.middle_name %}
+                                        {{ profile.last_name }} {{ profile.first_name }} {{ profile.middle_name }} ({{ emp.email }})
+                                    {% else %}
+                                        {{ emp.get_full_name|default:emp.username }} ({{ emp.email }})
+                                    {% endif %}
+                                {% endwith %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" style="padding: 6px 16px; background: var(--cp-accent); color: var(--cp-accent-contrast); border: none; border-radius: 4px; cursor: pointer;">
+                        Добавить
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+        
+        <p style="margin-top: 16px;">
+            <a href="{% url 'units' %}" class="cp-menu-link">← Вернуться к списку отделов</a>
+        </p>
+    </section>
+
+    <section class="cp-card">
+        <header class="cp-card-header">
+            <div>
+                <div class="cp-card-title">Руководители отдела</div>
+                <div class="cp-card-subtitle">Управление списком руководителей для этого отдела</div>
+            </div>
+        </header>
+        
+        {% if unit_heads %}
+            <div class="cp-table-wrapper" style="margin-bottom: 20px;">
+                <table class="cp-table">
+                    <thead>
+                        <tr>
+                            <th>ФИО</th>
+                            <th>Отдел</th>
+                            <th>Email</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for head in unit_heads %}
+                            {% if head.unit_name == unit.name %}
+                                <tr>
+                                    <td>
+                                        {% if head.last_name or head.first_name or head.middle_name %}
+                                            {{ head.last_name }} {{ head.first_name }} {{ head.middle_name }}
+                                        {% else %}
+                                            {{ head.user.get_full_name|default:head.user.username }}
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ head.unit_name }}</strong></td>
+                                    <td>{{ head.user.email }}</td>
+                                    <td>
+                                        <form method="post" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="remove_unit_head">
+                                            <input type="hidden" name="head_id" value="{{ head.id }}">
+                                            <button type="submit" style="padding: 4px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                                Удалить
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="cp-link-muted" style="margin-bottom: 20px;">Руководители для этого отдела ещё не добавлены.</p>
+        {% endif %}
+        
+        <div style="padding-top: 20px; border-top: 1px solid #ddd;">
+            <p style="font-weight: 600; margin-bottom: 12px;">Добавить руководителя для этого отдела:</p>
+            <form method="post" style="display: flex; flex-direction: column; gap: 12px;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_unit_head">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <label for="add_unit_head_user" style="min-width: 150px;">Сотрудник:</label>
+                    <select name="user_id" id="add_unit_head_user" style="flex: 1; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="">Выберите сотрудника...</option>
+                        {% for emp in all_employees %}
+                            <option value="{{ emp.id }}">
+                                {% with profile=emp.profile %}
+                                    {% if profile.last_name or profile.first_name or profile.middle_name %}
+                                        {{ profile.last_name }} {{ profile.first_name }} {{ profile.middle_name }} ({{ emp.email }})
+                                    {% else %}
+                                        {{ emp.get_full_name|default:emp.username }} ({{ emp.email }})
+                                    {% endif %}
+                                {% endwith %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <input type="hidden" name="unit_name" value="{{ unit.name }}">
+                <button type="submit" style="padding: 8px 16px; background: var(--cp-accent); color: var(--cp-accent-contrast); border: none; border-radius: 4px; cursor: pointer; align-self: flex-start;">
+                    Добавить руководителя
+                </button>
+            </form>
+        </div>
+    </section>
+</div>
+{% endblock %}
+

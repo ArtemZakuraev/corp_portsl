@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+
+{% block title %}{% if action == 'create' %}Создать статью{% else %}Редактировать статью{% endif %} — База знаний — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+База знаний / {% if action == 'create' %}Создать статью{% else %}Редактировать статью{% endif %}
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">{% if action == 'create' %}Создать статью{% else %}Редактировать статью{% endif %}</h1>
+<p class="cp-page-subtitle">
+    {% if action == 'create' %}
+        Создайте новую статью для базы знаний. Вы можете добавить вложенные статьи, изображения и файлы.
+    {% else %}
+        Редактируйте статью базы знаний. Вы можете изменить содержание, добавить изображения и файлы.
+    {% endif %}
+</p>
+
+<div style="display: flex; gap: 24px;">
+    <div style="flex: 2; min-width: 0;">
+        <section class="cp-card">
+            <header class="cp-card-header">
+                <div>
+                    <div class="cp-card-title">Основная информация</div>
+                    <div class="cp-card-subtitle">Название, URL и содержание статьи</div>
+                </div>
+            </header>
+            <form method="post" enctype="multipart/form-data" style="padding: 24px;">
+                {% csrf_token %}
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div>
+                        <label for="{{ form.title.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                            {{ form.title.label }}:
+                        </label>
+                        {{ form.title }}
+                        {% if form.title.help_text %}
+                            <p style="font-size: 12px; color: var(--cp-text-muted); margin-top: 4px;">{{ form.title.help_text }}</p>
+                        {% endif %}
+                        {% if form.title.errors %}
+                            <div style="color: #d32f2f; font-size: 13px; margin-top: 4px;">{{ form.title.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label for="{{ form.content.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                            {{ form.content.label }}:
+                        </label>
+                        <div style="border: 1px solid var(--cp-border); border-radius: 6px; overflow: hidden;">
+                            {{ form.content }}
+                        </div>
+                        {% if form.content.help_text %}
+                            <p style="font-size: 12px; color: var(--cp-text-muted); margin-top: 4px;">{{ form.content.help_text }}</p>
+                        {% endif %}
+                        {% if form.content.errors %}
+                            <div style="color: #d32f2f; font-size: 13px; margin-top: 4px;">{{ form.content.errors }}</div>
+                        {% endif %}
+                        <p style="font-size: 12px; color: var(--cp-text-muted); margin-top: 8px;">
+                            <i class="fas fa-info-circle"></i> Используйте панель инструментов для форматирования текста, вставки ссылок и изображений.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="{{ form.parent.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                            {{ form.parent.label }}:
+                        </label>
+                        {{ form.parent }}
+                        {% if form.parent.help_text %}
+                            <p style="font-size: 12px; color: var(--cp-text-muted); margin-top: 4px;">{{ form.parent.help_text }}</p>
+                        {% endif %}
+                        {% if form.parent.errors %}
+                            <div style="color: #d32f2f; font-size: 13px; margin-top: 4px;">{{ form.parent.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div style="display: flex; gap: 20px;">
+                        <div style="flex: 1;">
+                            <label for="{{ form.order.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                {{ form.order.label }}:
+                            </label>
+                            {{ form.order }}
+                            {% if form.order.help_text %}
+                                <p style="font-size: 12px; color: var(--cp-text-muted); margin-top: 4px;">{{ form.order.help_text }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div style="flex: 1; display: flex; align-items: center; padding-top: 28px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                {{ form.is_published }}
+                                <span>{{ form.is_published.label }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="padding-top: 20px; border-top: 1px solid var(--cp-border);">
+                        <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600;">Настройки видимости</h3>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <label for="{{ form.visibility_type.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                {{ form.visibility_type.label }}:
+                            </label>
+                            {{ form.visibility_type }}
+                            {% if form.visibility_type.help_text %}
+                                <p style="font-size: 12px; color: var(--cp-text-muted); margin-top: 4px;">{{ form.visibility_type.help_text }}</p>
+                            {% endif %}
+                            {% if form.visibility_type.errors %}
+                                <div style="color: #d32f2f; font-size: 13px; margin-top: 4px;">{{ form.visibility_type.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div id="view-groups-field" style="margin-bottom: 16px; display: none;">
+                            <label for="{{ form.view_groups.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                {{ form.view_groups.label }}:
+                            </label>
+                            {{ form.view_groups }}
+                            {% if form.view_groups.help_text %}
+                                <p style="font-size: 12px; color: var(--cp-text-muted); margin-top: 4px;">{{ form.view_groups.help_text }}</p>
+                            {% endif %}
+                            {% if form.view_groups.errors %}
+                                <div style="color: #d32f2f; font-size: 13px; margin-top: 4px;">{{ form.view_groups.errors }}</div>
+                            {% endif %}
+                            <p style="font-size: 12px; color: var(--cp-text-muted); margin-top: 8px;">
+                                <a href="{% url 'wiki_groups_list' %}" target="_blank" class="cp-menu-link">
+                                    <i class="fas fa-cog"></i> Управление группами просмотра
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="padding-top: 20px; border-top: 1px solid var(--cp-border);">
+                        <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600;">Изображения</h3>
+                        <div style="margin-bottom: 16px;">
+                            <label for="images" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                Загрузить изображения:
+                            </label>
+                            <input type="file" name="images" id="images" multiple accept="image/*" style="width: 100%; padding: 8px; border: 1px solid var(--cp-border); border-radius: 4px;">
+                            <p style="font-size: 12px; color: var(--cp-text-muted); margin-top: 4px;">
+                                Можно выбрать несколько изображений. Поддерживаются форматы: JPG, PNG, GIF, WebP.
+                            </p>
+                        </div>
+                        {% if article and article.images.all %}
+                            <div style="margin-top: 20px;">
+                                <p style="font-weight: 600; margin-bottom: 12px;">Текущие изображения:</p>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
+                                    {% for image in article.images.all %}
+                                        <div style="position: relative; border: 1px solid var(--cp-border); border-radius: 6px; overflow: hidden;">
+                                            <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:article.title }}" style="width: 100%; height: 150px; object-fit: cover;">
+                                            <form method="post" action="{% url 'wiki_delete_image' image.id %}" style="position: absolute; top: 4px; right: 4px;">
+                                                {% csrf_token %}
+                                                <button type="submit" onclick="return confirm('Удалить изображение?');" style="padding: 4px 8px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div style="padding-top: 20px; border-top: 1px solid var(--cp-border);">
+                        <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600;">Файлы</h3>
+                        <div style="margin-bottom: 16px;">
+                            <label for="files" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                Загрузить файлы:
+                            </label>
+                            <input type="file" name="files" id="files" multiple style="width: 100%; padding: 8px; border: 1px solid var(--cp-border); border-radius: 4px;">
+                            <p style="font-size: 12px; color: var(--cp-text-muted); margin-top: 4px;">
+                                Можно выбрать несколько файлов.
+                            </p>
+                        </div>
+                        {% if article and article.files.all %}
+                            <div style="margin-top: 20px;">
+                                <p style="font-weight: 600; margin-bottom: 12px;">Текущие файлы:</p>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    {% for file in article.files.all %}
+                                        <li style="padding: 12px; margin-bottom: 8px; border: 1px solid var(--cp-border); border-radius: 6px; background: var(--cp-bg-elevated); display: flex; justify-content: space-between; align-items: center;">
+                                            <div>
+                                                <div style="font-weight: 600;">
+                                                    <i class="fas fa-file"></i> {{ file.get_file_name }}
+                                                </div>
+                                                {% if file.description %}
+                                                    <div style="font-size: 12px; color: var(--cp-text-muted);">{{ file.description }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <form method="post" action="{% url 'wiki_delete_file' file.id %}" style="display: inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" onclick="return confirm('Удалить файл?');" style="padding: 6px 12px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                                    <i class="fas fa-trash"></i> Удалить
+                                                </button>
+                                            </form>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div style="display: flex; gap: 12px; padding-top: 20px; border-top: 1px solid var(--cp-border);">
+                        <button type="submit" style="padding: 12px 24px; background: var(--cp-accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                            <i class="fas fa-save"></i> Сохранить статью
+                        </button>
+                        <a href="{% if article %}{% url 'wiki_article' article.slug %}{% else %}{% url 'wiki_list' %}{% endif %}" class="cp-menu-link" style="padding: 12px 24px; border: 1px solid var(--cp-border); border-radius: 6px; text-decoration: none; display: inline-block;">
+                            Отмена
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+    
+    <div style="flex: 1; min-width: 300px;">
+        <section class="cp-card" style="position: sticky; top: 80px;">
+            <header class="cp-card-header">
+                <div>
+                    <div class="cp-card-title">Предпросмотр</div>
+                    <div class="cp-card-subtitle">Как будет выглядеть статья</div>
+                </div>
+            </header>
+            <div id="article-preview" style="padding: 20px; min-height: 200px; max-height: 600px; overflow-y: auto; border: 1px solid var(--cp-border); border-radius: 6px; background: var(--cp-bg-elevated); line-height: 1.8;">
+                <p class="cp-link-muted" style="text-align: center; padding: 40px;">
+                    Предпросмотр появится здесь после ввода текста
+                </p>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- TinyMCE (используем бесплатную версию без API ключа) -->
+<script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js"></script>
+<script>
+// Инициализация TinyMCE
+tinymce.init({
+    selector: '.wiki-editor',
+    height: 500,
+    menubar: true,
+    plugins: [
+        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+        'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+    ],
+    toolbar: 'undo redo | blocks | ' +
+        'bold italic forecolor | alignleft aligncenter ' +
+        'alignright alignjustify | bullist numlist outdent indent | ' +
+        'removeformat | link image | code preview | help',
+    content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; }',
+    language: 'ru',
+    branding: false,
+    promotion: false,
+    // Настройки для загрузки изображений
+    images_upload_handler: function (blobInfo, progress) {
+        return new Promise(function (resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.withCredentials = false;
+            xhr.open('POST', '{% url "wiki_upload_image" %}');
+            
+            xhr.upload.onprogress = function (e) {
+                progress(e.loaded / e.total * 100);
+            };
+            
+            xhr.onload = function () {
+                if (xhr.status === 403) {
+                    reject({ message: 'HTTP Error: ' + xhr.status, remove: true });
+                    return;
+                }
+                
+                if (xhr.status < 200 || xhr.status >= 300) {
+                    reject('HTTP Error: ' + xhr.status);
+                    return;
+                }
+                
+                var json = JSON.parse(xhr.responseText);
+                
+                if (!json || typeof json.location != 'string') {
+                    reject('Invalid JSON: ' + xhr.responseText);
+                    return;
+                }
+                
+                resolve(json.location);
+            };
+            
+            xhr.onerror = function () {
+                reject('Image upload failed due to a XHR Transport error. Code: ' + xhr.status);
+            };
+            
+            var formData = new FormData();
+            formData.append('file', blobInfo.blob(), blobInfo.filename());
+            
+            // Добавляем CSRF токен
+            var csrftoken = getCookie('csrftoken');
+            xhr.setRequestHeader('X-CSRFToken', csrftoken);
+            
+            xhr.send(formData);
+        });
+    },
+    // Обновление предпросмотра при изменении содержимого
+    setup: function(editor) {
+        editor.on('keyup change', function() {
+            updatePreview();
+        });
+    }
+});
+
+function toggleViewGroups() {
+    const visibilityType = document.getElementById('{{ form.visibility_type.id_for_label }}').value;
+    const viewGroupsField = document.getElementById('view-groups-field');
+    
+    if (visibilityType === 'groups') {
+        viewGroupsField.style.display = 'block';
+    } else {
+        viewGroupsField.style.display = 'none';
+    }
+}
+
+function updatePreview() {
+    const editor = tinymce.get('{{ form.content.id_for_label }}');
+    if (editor) {
+        const content = editor.getContent();
+        const previewDiv = document.getElementById('article-preview');
+        if (content.trim()) {
+            previewDiv.innerHTML = content;
+        } else {
+            previewDiv.innerHTML = '<p class="cp-link-muted" style="text-align: center; padding: 40px;">Предпросмотр появится здесь после ввода текста</p>';
+        }
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    toggleViewGroups();
+    // Обновляем предпросмотр при загрузке, если есть содержимое
+    setTimeout(updatePreview, 1000);
+});
+</script>
+
+<style>
+.wiki-editor {
+    width: 100% !important;
+}
+
+/* Улучшаем стили для TinyMCE */
+.tox-tinymce {
+    border-radius: 6px !important;
+    border: 1px solid var(--cp-border) !important;
+}
+
+.tox .tox-edit-area__iframe {
+    background-color: white !important;
+}
+
+/* Предпросмотр */
+#article-preview img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin: 10px 0;
+}
+
+#article-preview a {
+    color: var(--cp-accent);
+    text-decoration: underline;
+}
+
+#article-preview h1, #article-preview h2, #article-preview h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+#article-preview h1 { font-size: 24px; }
+#article-preview h2 { font-size: 20px; }
+#article-preview h3 { font-size: 18px; }
+
+#article-preview ul, #article-preview ol {
+    margin: 10px 0;
+    padding-left: 30px;
+}
+
+#article-preview p {
+    margin: 10px 0;
+}
+</style>
+{% endblock %}
+

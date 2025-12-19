@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}О системе — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+О системе
+{% endblock %}
+
+{% block content %}
+<div class="cp-card" style="max-width: 800px; margin: 0 auto;">
+    <div style="text-align: center; padding: 40px 20px;">
+        {% if portal_settings.logo %}
+            <div style="margin-bottom: 30px;">
+                <img src="{{ portal_settings.logo.url }}" alt="{{ portal_settings.site_name }}" 
+                     style="max-width: 200px; max-height: 200px; object-fit: contain;">
+            </div>
+        {% endif %}
+        
+        <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 16px; color: var(--cp-text-main);">
+            Корпоративный портал
+        </h1>
+        
+        <div style="margin-top: 40px; padding-top: 40px; border-top: 1px solid var(--cp-border-light);">
+            <div style="text-align: left; max-width: 600px; margin: 0 auto;">
+                <div style="margin-bottom: 24px;">
+                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px; color: var(--cp-text-main);">
+                        Наименование системы
+                    </h3>
+                    <p style="font-size: 16px; color: var(--cp-text-muted); margin: 0;">
+                        Корпоративный портал
+                    </p>
+                </div>
+                
+                <div style="margin-bottom: 24px;">
+                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px; color: var(--cp-text-main);">
+                        Автор
+                    </h3>
+                    <p style="font-size: 16px; color: var(--cp-text-muted); margin: 0;">
+                        a.zakuraev
+                    </p>
+                </div>
+                
+                {% if portal_settings.site_name %}
+                    <div style="margin-bottom: 24px;">
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px; color: var(--cp-text-main);">
+                            Название портала
+                        </h3>
+                        <p style="font-size: 16px; color: var(--cp-text-muted); margin: 0;">
+                            {{ portal_settings.site_name }}
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+

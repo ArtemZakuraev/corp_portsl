@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Загрузка документа — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Документы и процессы / Документы / Загрузка
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">Загрузить документ</h1>
+<p class="cp-page-subtitle">
+    Выберите файл на своём компьютере и задайте права доступа. Файл будет сохранён в каталоге /data портала.
+</p>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Загрузить</button>
+</form>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,382 @@
+{% extends "base.html" %}
+
+{% block title %}Оргструктура — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Организация / Оргструктура
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">Организационная структура</h1>
+<p class="cp-page-subtitle">
+    Графическое отображение структуры компании: департаменты, отделы и сотрудники.
+</p>
+
+<div class="org-chart-container">
+    {% for dept in root_departments %}
+        {% include "organization/org_chart_dept.html" with department=dept %}
+    {% endfor %}
+
+    {% if standalone_units %}
+        <div class="org-chart-item org-chart-department">
+            <div class="org-chart-card org-chart-dept-card" style="border-style: dashed;">
+                <div class="org-chart-card-header">
+                    <div class="org-chart-card-icon">📋</div>
+                    <div class="org-chart-card-content">
+                        <div class="org-chart-card-title">Отделы без департамента</div>
+                        <div class="org-chart-card-subtitle">Отделы, не привязанные к департаментам</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="org-chart-children org-chart-units">
+                {% for unit in standalone_units %}
+                    <div class="org-chart-item org-chart-unit">
+                        <div class="org-chart-connector"></div>
+                        <div class="org-chart-card org-chart-unit-card">
+                            <div class="org-chart-card-header">
+                                <div class="org-chart-card-icon">📁</div>
+                                <div class="org-chart-card-content">
+                                    <div class="org-chart-card-title">{{ unit.name }}</div>
+                                    {% if unit.head %}
+                                        <div class="org-chart-card-subtitle">
+                                            Руководитель: {{ unit.head.get_full_name|default:unit.head.username }}
+                                        </div>
+                                    {% else %}
+                                        <div class="org-chart-card-subtitle">Руководитель не назначен</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {% comment %} Сотрудники отдела внутри карточки: сначала руководитель, затем остальные {% endcomment %}
+                            {% if unit.employees.all %}
+                                <div class="org-chart-employees-list" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--cp-border);">
+                                    {% comment %} Руководитель отдела {% endcomment %}
+                                    {% if unit.head %}
+                                        <div class="org-chart-employee-item org-chart-head-item">
+                                            <div class="org-chart-employee-header">
+                                                {% with profile=unit.head.profile %}
+                                                    {% if profile.photo %}
+                                                        <img src="{{ profile.photo.url }}" alt="Фото" class="org-chart-avatar-small">
+                                                    {% else %}
+                                                        <div class="org-chart-avatar-placeholder-small">
+                                                            {{ profile.first_name|default:unit.head.first_name|first }}{{ profile.last_name|default:unit.head.last_name|first }}
+                                                        </div>
+                                                    {% endif %}
+                                                {% endwith %}
+                                                <div class="org-chart-employee-info">
+                                                    <div class="org-chart-employee-name">
+                                                        {% with profile=unit.head.profile %}
+                                                            {% if profile.last_name or profile.first_name or profile.middle_name %}
+                                                                {{ profile.last_name }} {{ profile.first_name }} {{ profile.middle_name }}
+                                                            {% else %}
+                                                                {{ unit.head.last_name }} {{ unit.head.first_name }}
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                        <span style="color: var(--cp-accent); font-size: 10px; margin-left: 6px;">👑</span>
+                                                    </div>
+                                                    <div class="org-chart-employee-email">{{ unit.head.email }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% comment %} Остальные сотрудники отдела {% endcomment %}
+                                    {% for emp in unit.employees.all %}
+                                        {% if emp != unit.head %}
+                                            <div class="org-chart-employee-item">
+                                                <div class="org-chart-employee-header">
+                                                    {% with profile=emp.profile %}
+                                                        {% if profile.photo %}
+                                                            <img src="{{ profile.photo.url }}" alt="Фото" class="org-chart-avatar-small">
+                                                        {% else %}
+                                                            <div class="org-chart-avatar-placeholder-small">
+                                                                {{ profile.first_name|default:emp.first_name|first }}{{ profile.last_name|default:emp.last_name|first }}
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                    <div class="org-chart-employee-info">
+                                                        <div class="org-chart-employee-name">
+                                                            {% with profile=emp.profile %}
+                                                                {% if profile.last_name or profile.first_name or profile.middle_name %}
+                                                                    {{ profile.last_name }} {{ profile.first_name }} {{ profile.middle_name }}
+                                                                {% else %}
+                                                                    {{ emp.last_name }} {{ emp.first_name }}
+                                                                {% endif %}
+                                                            {% endwith %}
+                                                        </div>
+                                                        <div class="org-chart-employee-email">{{ emp.email }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if not departments and not standalone_units %}
+        <div class="cp-card" style="text-align: center; padding: 40px;">
+            <p class="cp-link-muted">Организационная структура ещё не создана.</p>
+            <p class="cp-link-muted">Перейдите в раздел <a href="{% url 'units' %}">Отделы и департаменты</a> для создания структуры компании.</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.org-chart-container {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding: 20px 0;
+}
+
+.org-chart-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.org-chart-department {
+    width: 100%;
+}
+
+.org-chart-card {
+    background-color: #ffffff;
+    border: 2px solid var(--cp-border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    min-width: 280px;
+    max-width: 400px;
+    box-shadow: var(--cp-shadow-soft);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.org-chart-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 35, 52, 0.12);
+}
+
+.org-chart-dept-card {
+    border-color: var(--cp-accent);
+    background: linear-gradient(135deg, #fffbf0 0%, #ffffff 100%);
+}
+
+.org-chart-unit-card {
+    border-color: #87ceeb;
+    background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+}
+
+.org-chart-employee-card {
+    border-color: #d3d3d3;
+    background-color: #ffffff;
+}
+
+.org-chart-head-card {
+    border-color: var(--cp-accent);
+    background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);
+    border-width: 2px;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+}
+
+.org-chart-head-card:hover {
+    box-shadow: 0 6px 16px rgba(255, 193, 7, 0.3);
+}
+
+.org-chart-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.org-chart-card-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.org-chart-card-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.org-chart-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--cp-text-main);
+    margin-bottom: 4px;
+    word-wrap: break-word;
+}
+
+.org-chart-card-subtitle {
+    font-size: 12px;
+    color: var(--cp-text-muted);
+    word-wrap: break-word;
+}
+
+.org-chart-children {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 24px;
+    padding-top: 24px;
+    position: relative;
+}
+
+.org-chart-children::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 24px;
+    background-color: var(--cp-border);
+}
+
+.org-chart-unit {
+    position: relative;
+}
+
+.org-chart-employee {
+    position: relative;
+    min-width: 200px;
+}
+
+.org-chart-connector {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 24px;
+    background-color: var(--cp-border);
+}
+
+.org-chart-connector::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 2px;
+    background-color: var(--cp-border);
+}
+
+.org-chart-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.org-chart-avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--cp-accent);
+    color: var(--cp-accent-contrast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.org-chart-employees-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.org-chart-employee-item {
+    padding: 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.org-chart-employee-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.org-chart-head-item {
+    background-color: rgba(255, 193, 7, 0.08);
+    border-left: 3px solid var(--cp-accent);
+    padding-left: 12px;
+}
+
+.org-chart-employee-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.org-chart-avatar-small {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.org-chart-avatar-placeholder-small {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--cp-accent);
+    color: var(--cp-accent-contrast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.org-chart-employee-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.org-chart-employee-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cp-text-main);
+    margin-bottom: 2px;
+    word-wrap: break-word;
+}
+
+.org-chart-employee-email {
+    font-size: 11px;
+    color: var(--cp-text-muted);
+    word-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+    .org-chart-children {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .org-chart-card {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .org-chart-employee {
+        min-width: auto;
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+

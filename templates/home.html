@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block title %}Рабочий стол — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Рабочий стол / Обзор
+{% endblock %}
+
+{% block content %}
+<div class="cp-dashboard">
+    <!-- Информационные карточки -->
+    <div class="cp-widgets-row">
+        <a href="{% url 'vacations' %}" class="cp-widget cp-widget-blue" style="text-decoration: none; color: inherit;">
+            <div class="cp-widget-content">
+                <h3 class="cp-widget-title">Планирование отпусков</h3>
+                <p class="cp-widget-subtitle">Просмотр графика отпусков всех сотрудников</p>
+            </div>
+            <div class="cp-widget-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+        </a>
+        
+        <a href="{% url 'employees' %}" class="cp-widget cp-widget-blue" style="text-decoration: none; color: inherit;">
+            <div class="cp-widget-content">
+                <h3 class="cp-widget-title">Сотрудники</h3>
+                <p class="cp-widget-subtitle">Каталог сотрудников компании</p>
+            </div>
+            <div class="cp-widget-icon">
+                <i class="fas fa-users"></i>
+            </div>
+        </a>
+        
+        <a href="{% url 'meetings' %}" class="cp-widget cp-widget-orange" style="text-decoration: none; color: inherit;">
+            <div class="cp-widget-content">
+                <h3 class="cp-widget-title">Мои встречи</h3>
+                <p class="cp-widget-subtitle">Встречи на сегодня</p>
+                {% if meetings_today_count > 0 %}
+                    <div class="cp-widget-number">{{ meetings_today_count }}</div>
+                {% endif %}
+            </div>
+            <div class="cp-widget-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+        </a>
+        
+        <a href="{% url 'tasks' %}" class="cp-widget cp-widget-red" style="text-decoration: none; color: inherit;">
+            <div class="cp-widget-content">
+                <h3 class="cp-widget-title">Мои задачи</h3>
+                <p class="cp-widget-subtitle">Задачи, которые я создал</p>
+                {% if tasks_count > 0 %}
+                    <div class="cp-widget-number">{{ tasks_count }}</div>
+                {% endif %}
+            </div>
+            <div class="cp-widget-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+        </a>
+    </div>
+
+    <div class="cp-dashboard-grid" id="dashboardGrid">
+        <!-- Последние новости -->
+        <section class="cp-card dashboard-block" data-block-id="news" draggable="true">
+            <header class="cp-card-header">
+                <div>
+                    <div class="cp-card-title">Новости</div>
+                </div>
+                {% if recent_news %}
+                    <a href="{% url 'news_list' %}" class="cp-link-muted">Все <i class="fas fa-chevron-right"></i></a>
+                {% endif %}
+            </header>
+            {% if recent_news %}
+                <ul class="cp-recent-list">
+                    {% for news_item in recent_news %}
+                        <li class="cp-recent-item">
+                            <div class="cp-recent-icon">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                            <div class="cp-recent-content">
+                                <div class="cp-recent-title">{{ news_item.title }}</div>
+                                <div class="cp-recent-meta">{{ news_item.created_at|date:"d.m.Y H:i" }} · {{ news_item.author.get_full_name|default:news_item.author.username }}</div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div style="padding: 20px; text-align: center; color: var(--cp-text-muted);">
+                    Нет новостей
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- Календарь / Встречи -->
+        <section class="cp-card dashboard-block" data-block-id="calendar" draggable="true">
+            <header class="cp-card-header">
+                <div>
+                    <div class="cp-card-title">Календарь</div>
+                </div>
+            </header>
+            {% if all_meetings %}
+                <div class="cp-calendar-section">
+                    {% for meeting in all_meetings|slice:":6" %}
+                        {% if meeting.start %}
+                            <div class="cp-calendar-day">
+                                {% if meeting.start|date:"Y-m-d" == today|date:"Y-m-d" %}
+                                    <div class="cp-calendar-day-title">Сегодня</div>
+                                {% else %}
+                                    <div class="cp-calendar-day-title">{{ meeting.start|date:"l d"|capfirst }}</div>
+                                {% endif %}
+                                <div class="cp-calendar-events">
+                                    <div class="cp-calendar-event">
+                                        <span class="cp-calendar-time">{{ meeting.start|date:"H:i" }}</span>
+                                        <span class="cp-calendar-event-title">{{ meeting.summary|default:"Встреча" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <div class="cp-calendar-section">
+                            <div class="cp-calendar-day">
+                                <div class="cp-calendar-day-title">{{ today|date:"l d"|capfirst }}</div>
+                                <div class="cp-calendar-events" style="padding: 20px; text-align: center; color: var(--cp-text-muted);">
+                                    Нет встреч
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="cp-calendar-section">
+                    <div class="cp-calendar-day">
+                        <div class="cp-calendar-day-title">{{ today|date:"l d"|capfirst }}</div>
+                        <div class="cp-calendar-events" style="padding: 20px; text-align: center; color: var(--cp-text-muted);">
+                            Нет встреч
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- Задачи на сегодня -->
+        <section class="cp-card dashboard-block" data-block-id="tasks" draggable="true">
+            <header class="cp-card-header">
+                <div>
+                    <div class="cp-card-title">Задачи на сегодня</div>
+                </div>
+                {% if tasks_today %}
+                    <a href="{% url 'tasks' %}" class="cp-link-muted">Все <i class="fas fa-chevron-right"></i></a>
+                {% endif %}
+            </header>
+            {% if tasks_today %}
+                <ul class="cp-task-list">
+                    {% for task in tasks_today %}
+                        <li class="cp-task-item">
+                            <div class="cp-task-content">
+                                <div class="cp-task-title">{{ task.title }}</div>
+                                <div class="cp-task-meta">#{{ task.id }} · <span class="cp-task-status cp-task-status-{{ task.status }}">{{ task.get_status_display }}</span></div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div style="padding: 20px; text-align: center; color: var(--cp-text-muted);">
+                    Нет задач на сегодня
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- Инструкции новичка -->
+        <section class="cp-card cp-card-dark dashboard-block" data-block-id="instructions" draggable="true">
+            <div class="cp-card-content">
+                <h3 class="cp-card-title">Инструкции новичка</h3>
+                <p class="cp-card-subtitle">Все что нужно знать</p>
+            </div>
+            <div class="cp-card-icon">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+        </section>
+
+        <!-- База знаний -->
+        <a href="{% url 'wiki_list' %}" class="cp-card cp-card-blue dashboard-block" data-block-id="knowledge" draggable="true" style="text-decoration: none; color: inherit;">
+            <div class="cp-card-content">
+                <h3 class="cp-card-title">База знаний</h3>
+                <p class="cp-card-subtitle">Регламенты, инструкции, информация по проектам</p>
+            </div>
+            <div class="cp-card-icon">
+                <i class="fas fa-book"></i>
+            </div>
+        </a>
+
+        <!-- Последние контакты -->
+        <section class="cp-card dashboard-block" data-block-id="contacts" draggable="true">
+            <header class="cp-card-header">
+                <div>
+                    <div class="cp-card-title">Последние контакты</div>
+                </div>
+                {% if recent_employees %}
+                    <a href="{% url 'employees' %}" class="cp-link-muted">Все <i class="fas fa-chevron-right"></i></a>
+                {% endif %}
+            </header>
+            {% if recent_employees %}
+                <ul class="cp-contacts-list">
+                    {% for employee in recent_employees %}
+                        {% with profile=employee.profile %}
+                        <li class="cp-contact-item">
+                            <a href="{% url 'employees' %}?id={{ employee.id }}" style="text-decoration: none; color: inherit; display: flex; align-items: center; width: 100%;">
+                                <div class="cp-contact-avatar">
+                                    {% if profile.photo %}
+                                        <img src="{{ profile.photo.url }}" alt="{{ employee.get_full_name|default:employee.username }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    {% else %}
+                                        <i class="fas fa-user"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="cp-contact-content" style="flex: 1;">
+                                    <div class="cp-contact-name">
+                                        {% if profile.last_name or profile.first_name or profile.middle_name %}
+                                            {{ profile.last_name }} {{ profile.first_name }} {{ profile.middle_name }}
+                                        {% else %}
+                                            {{ employee.last_name }} {{ employee.first_name|default:employee.username }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="cp-contact-meta">
+                                        {% if profile.position %}
+                                            {{ profile.position.name }}
+                                        {% else %}
+                                            Сотрудник
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        {% endwith %}
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div style="padding: 20px; text-align: center; color: var(--cp-text-muted);">
+                    Нет просмотренных контактов
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+{% if request.user.is_authenticated %}
+{{ blocks_order|json_script:"blocks-order-data" }}
+<script>
+(function() {
+    const dashboardGrid = document.getElementById('dashboardGrid');
+    const blocks = Array.from(dashboardGrid.querySelectorAll('.dashboard-block'));
+    let draggedElement = null;
+    const blocksOrderData = JSON.parse(document.getElementById('blocks-order-data').textContent);
+    let blocksOrder = blocksOrderData || [];
+    
+    // Применяем сохраненный порядок при загрузке
+    if (blocksOrder && blocksOrder.length > 0) {
+        const blocksMap = {};
+        blocks.forEach(block => {
+            blocksMap[block.dataset.blockId] = block;
+        });
+        
+        // Сортируем блоки согласно сохраненному порядку
+        const orderedBlocks = [];
+        blocksOrder.forEach(blockId => {
+            if (blocksMap[blockId]) {
+                orderedBlocks.push(blocksMap[blockId]);
+                delete blocksMap[blockId];
+            }
+        });
+        
+        // Добавляем блоки, которых нет в сохраненном порядке
+        Object.values(blocksMap).forEach(block => {
+            orderedBlocks.push(block);
+        });
+        
+        // Переставляем блоки в DOM
+        orderedBlocks.forEach(block => {
+            dashboardGrid.appendChild(block);
+        });
+    }
+    
+    // Обработчики для drag and drop
+    blocks.forEach(block => {
+        block.addEventListener('dragstart', function(e) {
+            draggedElement = this;
+            this.style.opacity = '0.5';
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        
+        block.addEventListener('dragend', function(e) {
+            this.style.opacity = '1';
+            blocks.forEach(b => {
+                b.classList.remove('drag-over');
+            });
+        });
+        
+        block.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            if (this !== draggedElement) {
+                const rect = this.getBoundingClientRect();
+                const midY = rect.top + rect.height / 2;
+                
+                if (e.clientY < midY) {
+                    this.classList.add('drag-over-top');
+                    this.classList.remove('drag-over-bottom');
+                } else {
+                    this.classList.add('drag-over-bottom');
+                    this.classList.remove('drag-over-top');
+                }
+            }
+        });
+        
+        block.addEventListener('dragleave', function(e) {
+            this.classList.remove('drag-over-top', 'drag-over-bottom');
+        });
+        
+        block.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over-top', 'drag-over-bottom');
+            
+            if (draggedElement !== this) {
+                const rect = this.getBoundingClientRect();
+                const midY = rect.top + rect.height / 2;
+                
+                if (e.clientY < midY) {
+                    dashboardGrid.insertBefore(draggedElement, this);
+                } else {
+                    dashboardGrid.insertBefore(draggedElement, this.nextSibling);
+                }
+                
+                // Сохраняем новый порядок
+                saveBlocksOrder();
+            }
+        });
+    });
+    
+    function saveBlocksOrder() {
+        const currentBlocks = Array.from(dashboardGrid.querySelectorAll('.dashboard-block'));
+        const order = currentBlocks.map(block => block.dataset.blockId);
+        
+        fetch('{% url "save_dashboard_order" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ blocks_order: order })
+        }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                blocksOrder = data.blocks_order;
+            }
+        }).catch(error => {
+            console.error('Ошибка при сохранении порядка блоков:', error);
+        });
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+})();
+</script>
+
+<style>
+.dashboard-block {
+    cursor: move;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.dashboard-block:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-block.drag-over-top {
+    border-top: 3px solid var(--cp-accent, #6366f1);
+    margin-top: 4px;
+}
+
+.dashboard-block.drag-over-bottom {
+    border-bottom: 3px solid var(--cp-accent, #6366f1);
+    margin-bottom: 4px;
+}
+
+.dashboard-block[draggable="true"] {
+    user-select: none;
+}
+</style>
+{% endif %}
+
+{% endblock %}

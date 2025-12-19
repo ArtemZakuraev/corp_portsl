@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}{% if action == 'create' %}Создать группу просмотра{% else %}Редактировать группу просмотра{% endif %} — База знаний — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+База знаний / Группы просмотра / {% if action == 'create' %}Создать{% else %}Редактировать{% endif %}
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">{% if action == 'create' %}Создать группу просмотра{% else %}Редактировать группу просмотра{% endif %}</h1>
+<p class="cp-page-subtitle">
+    {% if action == 'create' %}
+        Создайте новую группу просмотра для ограничения доступа к статьям базы знаний.
+    {% else %}
+        Редактируйте группу просмотра. Изменения затронут доступ к статьям, использующим эту группу.
+    {% endif %}
+</p>
+
+<div style="margin-bottom: 16px;">
+    <a href="{% url 'wiki_groups_list' %}" class="cp-menu-link">
+        <i class="fas fa-arrow-left"></i> Вернуться к списку групп
+    </a>
+</div>
+
+<div style="display: flex; gap: 24px;">
+    <div style="flex: 1;">
+        <section class="cp-card">
+            <header class="cp-card-header">
+                <div>
+                    <div class="cp-card-title">Информация о группе</div>
+                    <div class="cp-card-subtitle">Название, описание и пользователи группы</div>
+                </div>
+            </header>
+            <form method="post" style="padding: 24px;">
+                {% csrf_token %}
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div>
+                        <label for="{{ form.name.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                            {{ form.name.label }}:
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.help_text %}
+                            <p style="font-size: 12px; color: var(--cp-text-muted); margin-top: 4px;">{{ form.name.help_text }}</p>
+                        {% endif %}
+                        {% if form.name.errors %}
+                            <div style="color: #d32f2f; font-size: 13px; margin-top: 4px;">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.description.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                            {{ form.description.label }}:
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.help_text %}
+                            <p style="font-size: 12px; color: var(--cp-text-muted); margin-top: 4px;">{{ form.description.help_text }}</p>
+                        {% endif %}
+                        {% if form.description.errors %}
+                            <div style="color: #d32f2f; font-size: 13px; margin-top: 4px;">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.users.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                            {{ form.users.label }}:
+                        </label>
+                        {{ form.users }}
+                        {% if form.users.help_text %}
+                            <p style="font-size: 12px; color: var(--cp-text-muted); margin-top: 4px;">{{ form.users.help_text }}</p>
+                        {% endif %}
+                        {% if form.users.errors %}
+                            <div style="color: #d32f2f; font-size: 13px; margin-top: 4px;">{{ form.users.errors }}</div>
+                        {% endif %}
+                        <p style="font-size: 12px; color: var(--cp-text-muted); margin-top: 8px;">
+                            <strong>Совет:</strong> Удерживайте Ctrl (или Cmd на Mac) для выбора нескольких пользователей.
+                        </p>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; padding-top: 20px; border-top: 1px solid var(--cp-border);">
+                        <button type="submit" style="padding: 12px 24px; background: var(--cp-accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                            <i class="fas fa-save"></i> Сохранить группу
+                        </button>
+                        <a href="{% url 'wiki_groups_list' %}" class="cp-menu-link" style="padding: 12px 24px; border: 1px solid var(--cp-border); border-radius: 6px; text-decoration: none; display: inline-block;">
+                            Отмена
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+
+
+

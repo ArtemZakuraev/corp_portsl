@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Группы просмотра — База знаний — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+База знаний / Группы просмотра
+{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <div>
+        <h1 class="cp-page-title">Группы просмотра</h1>
+        <p class="cp-page-subtitle">
+            Управление группами пользователей для ограничения доступа к статьям базы знаний.
+        </p>
+    </div>
+    <a href="{% url 'wiki_group_create' %}" class="cp-menu-link" style="padding: 10px 20px; background: var(--cp-accent); color: white; border-radius: 6px; text-decoration: none; font-weight: 600;">
+        <i class="fas fa-plus"></i> Создать группу
+    </a>
+</div>
+
+<div style="margin-bottom: 16px;">
+    <a href="{% url 'wiki_list' %}" class="cp-menu-link">
+        <i class="fas fa-arrow-left"></i> Вернуться к базе знаний
+    </a>
+</div>
+
+{% if groups %}
+    <section class="cp-card">
+        <header class="cp-card-header">
+            <div>
+                <div class="cp-card-title">Список групп просмотра</div>
+                <div class="cp-card-subtitle">Всего групп: {{ groups|length }}</div>
+            </div>
+        </header>
+        <div class="cp-table-wrapper">
+            <table class="cp-table">
+                <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Описание</th>
+                        <th>Пользователей</th>
+                        <th>Дата создания</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in groups %}
+                        <tr>
+                            <td>
+                                <strong>{{ group.name }}</strong>
+                            </td>
+                            <td>
+                                {% if group.description %}
+                                    {{ group.description|truncatewords:15 }}
+                                {% else %}
+                                    <span class="cp-link-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span style="font-weight: 600;">{{ group.users.count }}</span>
+                            </td>
+                            <td>
+                                {{ group.created_at|date:"d.m.Y" }}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    <a href="{% url 'wiki_group_edit' group.id %}" class="cp-menu-link" style="padding: 6px 12px; background: var(--cp-accent); color: white; border-radius: 4px; text-decoration: none; font-size: 13px;">
+                                        <i class="fas fa-edit"></i> Редактировать
+                                    </a>
+                                    <a href="{% url 'wiki_group_delete' group.id %}" class="cp-menu-link" style="padding: 6px 12px; background: #d32f2f; color: white; border-radius: 4px; text-decoration: none; font-size: 13px;">
+                                        <i class="fas fa-trash"></i> Удалить
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% else %}
+    <section class="cp-card">
+        <div style="padding: 40px; text-align: center;">
+            <i class="fas fa-users" style="font-size: 48px; color: var(--cp-text-muted); margin-bottom: 16px;"></i>
+            <p class="cp-link-muted" style="font-size: 16px; margin-bottom: 24px;">
+                Группы просмотра ещё не созданы.
+            </p>
+            <a href="{% url 'wiki_group_create' %}" class="cp-menu-link" style="padding: 10px 20px; background: var(--cp-accent); color: white; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
+                <i class="fas fa-plus"></i> Создать первую группу
+            </a>
+        </div>
+    </section>
+{% endif %}
+{% endblock %}
+
+
+
+

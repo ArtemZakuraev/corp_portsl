@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Пользователи и роли — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Администрирование / Пользователи и роли
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">Пользователи и роли</h1>
+<p class="cp-page-subtitle">
+    Здесь вы можете создавать новых пользователей портала, назначать им права администратора и модератора новостей.
+    Для более тонкой настройки прав можно использовать стандартную админ‑панель Django.
+    Доступ к этому разделу имеют суперпользователи и администраторы.
+</p>
+
+<div class="cp-dashboard-grid">
+    <section class="cp-card">
+        <header class="cp-card-header">
+            <div>
+                <div class="cp-card-title">Создать пользователя</div>
+                <div class="cp-card-subtitle">Укажите логин, email и при необходимости отметьте «Администратор»</div>
+            </div>
+        </header>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_user">
+            {{ form.as_p }}
+            <button type="submit">Создать пользователя</button>
+        </form>
+    </section>
+
+    <section class="cp-card">
+        <header class="cp-card-header">
+            <div>
+                <div class="cp-card-title">Существующие пользователи</div>
+                <div class="cp-card-subtitle">Управление ролями и правами пользователей</div>
+            </div>
+        </header>
+        <div class="cp-table-wrapper">
+            <table class="cp-table">
+                <thead>
+                    <tr>
+                        <th>Пользователь</th>
+                        <th>Роль</th>
+                        <th>Модератор новостей</th>
+                        <th>Модератор базы знаний</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                        <tr>
+                            <td>
+                                <strong>{{ u.username }}</strong>
+                                {% if u.email %}
+                                    <br><span style="font-size: 11px; color: #666;">{{ u.email }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if u.is_superuser %}
+                                    <span style="color: #d32f2f; font-weight: 600;">Суперпользователь</span>
+                                {% elif u.is_staff %}
+                                    <span style="color: #1976d2; font-weight: 600;">Администратор</span>
+                                {% else %}
+                                    <span style="color: #666;">Пользователь</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% with profile=u.profile %}
+                                    {% if profile.is_news_moderator %}
+                                        <span style="color: #388e3c; font-weight: 600;">✓ Да</span>
+                                    {% else %}
+                                        <span style="color: #999;">Нет</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td>
+                                {% with profile=u.profile %}
+                                    {% if profile.is_wiki_moderator %}
+                                        <span style="color: #388e3c; font-weight: 600;">✓ Да</span>
+                                    {% else %}
+                                        <span style="color: #999;">Нет</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td>
+                                <form method="post" style="display: inline-block;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="edit_role">
+                                    <input type="hidden" name="user_id" value="{{ u.id }}">
+                                    {% with profile=u.profile %}
+                                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                                            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                                                <input 
+                                                    type="checkbox" 
+                                                    name="is_news_moderator" 
+                                                    {% if profile.is_news_moderator %}checked{% endif %}
+                                                    onchange="this.form.submit()"
+                                                >
+                                                <span>Новостей</span>
+                                            </label>
+                                            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                                                <input 
+                                                    type="checkbox" 
+                                                    name="is_wiki_moderator" 
+                                                    {% if profile.is_wiki_moderator %}checked{% endif %}
+                                                    onchange="this.form.submit()"
+                                                >
+                                                <span>Базы знаний</span>
+                                            </label>
+                                        </div>
+                                    {% endwith %}
+                                </form>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="cp-link-muted" style="text-align: center; padding: 20px;">
+                                Пользователи ещё не созданы.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p style="margin-top: 16px;">
+            <a href="/admin/auth/user/" class="cp-menu-link">Открыть расширенное управление пользователями в админ‑панели</a>
+        </p>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} — База знаний — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+База знаний / 
+{% for breadcrumb in breadcrumbs %}
+    <a href="{% url 'wiki_article' breadcrumb.slug %}" class="cp-menu-link">{{ breadcrumb.title }}</a> / 
+{% endfor %}
+{{ article.title }}
+{% endblock %}
+
+{% block content %}
+<div style="display: flex; gap: 24px;">
+    <div style="flex: 1;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 24px;">
+            <div>
+                <h1 class="cp-page-title">{{ article.title }}</h1>
+                <p class="cp-page-subtitle">
+                    Автор: {{ article.author.get_full_name|default:article.author.username }} · 
+                    Создано: {{ article.created_at|date:"d.m.Y H:i" }} · 
+                    Обновлено: {{ article.updated_at|date:"d.m.Y H:i" }}
+                </p>
+            </div>
+            {% if is_moderator %}
+                <a href="{% url 'wiki_edit' article.slug %}" class="cp-menu-link" style="padding: 8px 16px; background: var(--cp-accent); color: white; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                    <i class="fas fa-edit"></i> Редактировать
+                </a>
+            {% endif %}
+        </div>
+
+        <section class="cp-card">
+            <div style="padding: 24px;">
+                <div style="line-height: 1.8; color: var(--cp-text-main);">
+                    {{ article.content|safe|linebreaks }}
+                </div>
+            </div>
+        </section>
+
+        {% if article.images.all %}
+            <section class="cp-card" style="margin-top: 24px;">
+                <header class="cp-card-header">
+                    <div>
+                        <div class="cp-card-title">Изображения</div>
+                    </div>
+                </header>
+                <div style="padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+                    {% for image in article.images.all %}
+                        <div style="text-align: center;">
+                            <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:article.title }}" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: var(--cp-shadow-sm);">
+                            {% if image.alt_text %}
+                                <p style="margin-top: 8px; font-size: 12px; color: var(--cp-text-muted);">{{ image.alt_text }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {% if article.files.all %}
+            <section class="cp-card" style="margin-top: 24px;">
+                <header class="cp-card-header">
+                    <div>
+                        <div class="cp-card-title">Прикреплённые файлы</div>
+                    </div>
+                </header>
+                <div style="padding: 20px;">
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        {% for file in article.files.all %}
+                            <li style="padding: 12px; margin-bottom: 8px; border: 1px solid var(--cp-border); border-radius: 6px; background: var(--cp-bg-elevated);">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; margin-bottom: 4px;">
+                                            <i class="fas fa-file"></i> {{ file.get_file_name }}
+                                        </div>
+                                        {% if file.description %}
+                                            <div style="font-size: 13px; color: var(--cp-text-muted);">{{ file.description }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <a href="{% url 'wiki_file_download' file.id %}" class="cp-menu-link" style="padding: 6px 12px; background: var(--cp-accent); color: white; border-radius: 4px; text-decoration: none; font-size: 13px;">
+                                        <i class="fas fa-download"></i> Скачать
+                                    </a>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+        {% endif %}
+
+        {% if children %}
+            <section class="cp-card" style="margin-top: 24px;">
+                <header class="cp-card-header">
+                    <div>
+                        <div class="cp-card-title">Подразделы</div>
+                        <div class="cp-card-subtitle">Вложенные статьи</div>
+                    </div>
+                </header>
+                <div style="padding: 20px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
+                        {% for child in children %}
+                            <div style="padding: 16px; border: 1px solid var(--cp-border); border-radius: 8px; background: var(--cp-bg-elevated);">
+                                <h3 style="margin: 0 0 8px 0; font-size: 16px;">
+                                    <a href="{% url 'wiki_article' child.slug %}" class="cp-menu-link">
+                                        {{ child.title }}
+                                    </a>
+                                </h3>
+                                <p style="margin: 0; font-size: 12px; color: var(--cp-text-muted);">
+                                    Обновлено: {{ child.updated_at|date:"d.m.Y" }}
+                                </p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+        {% endif %}
+
+        <div style="margin-top: 24px;">
+            <a href="{% url 'wiki_list' %}" class="cp-menu-link">
+                <i class="fas fa-arrow-left"></i> Вернуться к списку статей
+            </a>
+        </div>
+    </div>
+
+    <aside style="width: 300px; flex-shrink: 0;">
+        <section class="cp-card" style="position: sticky; top: 80px;">
+            <header class="cp-card-header">
+                <div>
+                    <div class="cp-card-title">Содержание</div>
+                    <div class="cp-card-subtitle">Навигация по статьям</div>
+                </div>
+            </header>
+            <div style="padding: 16px;">
+                {% if all_articles %}
+                    <nav style="display: flex; flex-direction: column; gap: 8px;">
+                        {% for art in all_articles %}
+                            <a href="{% url 'wiki_article' art.slug %}" class="cp-menu-link" style="display: block; padding: 8px 12px; border-radius: 6px; text-decoration: none; {% if art.slug == article.slug %}background: var(--cp-sidebar-active); font-weight: 600;{% endif %}">
+                                {{ art.title }}
+                            </a>
+                            {% with published_children=art.children.all %}
+                                {% for child in published_children %}
+                                    {% if child.is_published %}
+                                        {% if forloop.first %}
+                                            <div style="padding-left: 20px; margin-top: 4px;">
+                                        {% endif %}
+                                        <a href="{% url 'wiki_article' child.slug %}" class="cp-menu-link" style="display: block; padding: 6px 12px; font-size: 13px; color: var(--cp-text-muted); border-radius: 6px; text-decoration: none; {% if child.slug == article.slug %}background: var(--cp-sidebar-active); font-weight: 600; color: var(--cp-text-main);{% endif %}">
+                                            {{ child.title }}
+                                        </a>
+                                        {% if forloop.last %}
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                        {% endfor %}
+                    </nav>
+                {% else %}
+                    <p class="cp-link-muted" style="text-align: center; padding: 20px;">
+                        Нет статей
+                    </p>
+                {% endif %}
+            </div>
+        </section>
+    </aside>
+</div>
+{% endblock %}
+

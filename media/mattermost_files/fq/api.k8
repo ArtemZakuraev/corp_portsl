@@ -1,0 +1,1913 @@
+{
+  "kind": "NamespaceList",
+  "apiVersion": "v1",
+  "metadata": {
+    "resourceVersion": "17667503"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "d8-admission-policy-engine",
+        "uid": "f6313fa3-fc45-4312-af5f-19799159603d",
+        "resourceVersion": "41058",
+        "creationTimestamp": "2025-10-02T15:50:35Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-admission-policy-engine",
+          "module": "admission-policy-engine",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "admission-policy-engine",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T15:50:35Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-cert-manager",
+        "uid": "7ccdd2e6-556f-4371-9e04-b2ad1b649bb2",
+        "resourceVersion": "40528",
+        "creationTimestamp": "2025-10-02T15:49:48Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "cert-manager.io/disable-validation": "true",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-cert-manager",
+          "module": "cert-manager",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "cert-manager",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T15:49:48Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:cert-manager.io/disable-validation": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-chrony",
+        "uid": "ff8722cb-4a3a-4e91-a7ff-ed72786a4bf7",
+        "resourceVersion": "2004",
+        "creationTimestamp": "2025-10-02T12:15:45Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-chrony",
+          "module": "chrony",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "chrony",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T12:15:45Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-cloud-instance-manager",
+        "uid": "451fcc35-51b7-445d-a257-ae9fef8c414b",
+        "resourceVersion": "1088",
+        "creationTimestamp": "2025-10-02T12:14:12Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-cloud-instance-manager",
+          "module": "deckhouse",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "helm.sh/resource-policy": "keep",
+          "meta.helm.sh/release-name": "deckhouse",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T12:14:12Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:helm.sh/resource-policy": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-cni-cilium",
+        "uid": "4fe5ddbe-f41c-4395-8f5b-dea25bf8ad20",
+        "resourceVersion": "1574",
+        "creationTimestamp": "2025-10-02T12:15:18Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-cni-cilium",
+          "module": "cni-cilium",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "cni-cilium",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T12:15:18Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-console",
+        "uid": "37312e44-9755-43e6-b90c-00f896beabab",
+        "resourceVersion": "746098",
+        "creationTimestamp": "2025-10-03T12:02:05Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-console",
+          "module": "console",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "console",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-03T12:02:05Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-dashboard",
+        "uid": "362f36da-998a-4dce-9f21-4505fd693574",
+        "resourceVersion": "40196",
+        "creationTimestamp": "2025-10-02T15:49:45Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-dashboard",
+          "module": "dashboard",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "dashboard",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T15:49:45Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-descheduler",
+        "uid": "b37210a1-2841-499a-a18b-fbc95d2754b7",
+        "resourceVersion": "40164",
+        "creationTimestamp": "2025-10-02T15:49:44Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-descheduler",
+          "module": "descheduler",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "descheduler",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T15:49:44Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-ingress-nginx",
+        "uid": "f864eb82-d844-400a-a0da-f23f3f4b6f1a",
+        "resourceVersion": "41127",
+        "creationTimestamp": "2025-10-02T15:50:36Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-ingress-nginx",
+          "module": "ingress-nginx",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "ingress-nginx",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T15:50:36Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-local-path-provisioner",
+        "uid": "fc2729c0-b37e-4570-bfa0-fd3ab613edd0",
+        "resourceVersion": "1651",
+        "creationTimestamp": "2025-10-02T12:15:19Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-local-path-provisioner",
+          "module": "local-path-provisioner",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "local-path-provisioner",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T12:15:19Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-log-shipper",
+        "uid": "aa47d9f9-0a49-41d4-9e66-d7f037a9a5bd",
+        "resourceVersion": "40666",
+        "creationTimestamp": "2025-10-02T15:49:50Z",
+        "labels": {
+          "app": "log-shipper",
+          "app.kubernetes.io/managed-by": "Helm",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-log-shipper",
+          "module": "log-shipper",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "log-shipper",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T15:49:50Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-monitoring",
+        "uid": "338d33e9-6aab-4007-acc9-b28f00c0706d",
+        "resourceVersion": "1082",
+        "creationTimestamp": "2025-10-02T12:14:12Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-monitoring",
+          "module": "deckhouse",
+          "prometheus.deckhouse.io/monitor-watcher-enabled": "true",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true",
+          "prometheus.deckhouse.io/scrape-configs-watcher-enabled": "true"
+        },
+        "annotations": {
+          "helm.sh/resource-policy": "keep",
+          "meta.helm.sh/release-name": "deckhouse",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T12:14:12Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:helm.sh/resource-policy": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/monitor-watcher-enabled": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {},
+                  "f:prometheus.deckhouse.io/scrape-configs-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-multitenancy-manager",
+        "uid": "d6465d98-e350-4b2d-b5f0-2ee52a7f55c6",
+        "resourceVersion": "40069",
+        "creationTimestamp": "2025-10-02T15:49:43Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-multitenancy-manager",
+          "module": "multitenancy-manager",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "multitenancy-manager",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T15:49:43Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-observability",
+        "uid": "bcd82e52-87a8-4006-98f1-4184400fc8be",
+        "resourceVersion": "16155055",
+        "creationTimestamp": "2025-10-22T10:31:11Z",
+        "labels": {
+          "app": "observability",
+          "app.kubernetes.io/managed-by": "Helm",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-observability",
+          "module": "observability",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "observability",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-22T10:31:11Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-operator-prometheus",
+        "uid": "adcb634e-c269-4360-8e97-8184b8a6b1e8",
+        "resourceVersion": "39995",
+        "creationTimestamp": "2025-10-02T15:49:43Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-operator-prometheus",
+          "module": "operator-prometheus",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "operator-prometheus",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T15:49:43Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-pod-reloader",
+        "uid": "281233f4-e541-4f2b-9b96-cd5e476a44af",
+        "resourceVersion": "39994",
+        "creationTimestamp": "2025-10-02T15:49:43Z",
+        "labels": {
+          "app": "pod-reloader",
+          "app.kubernetes.io/managed-by": "Helm",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-pod-reloader",
+          "module": "pod-reloader",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "pod-reloader",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T15:49:43Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-service-accounts",
+        "uid": "6e6f69b5-592b-4cca-a1a9-ce908c610025",
+        "resourceVersion": "1085",
+        "creationTimestamp": "2025-10-02T12:14:12Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-service-accounts",
+          "module": "deckhouse",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "helm.sh/resource-policy": "keep",
+          "meta.helm.sh/release-name": "deckhouse",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T12:14:12Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:helm.sh/resource-policy": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-snapshot-controller",
+        "uid": "ee753883-ccd3-40e1-9ba2-78c6663aa26e",
+        "resourceVersion": "40386",
+        "creationTimestamp": "2025-10-02T15:49:46Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-snapshot-controller",
+          "module": "snapshot-controller",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "snapshot-controller",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T15:49:46Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-system",
+        "uid": "27f6b981-0540-409b-9598-0c6df6a9f0dc",
+        "resourceVersion": "1193",
+        "creationTimestamp": "2025-10-02T12:12:38Z",
+        "labels": {
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-system",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "managedFields": [
+          {
+            "manager": "dhctl",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T12:12:38Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              },
+              "f:spec": {
+                "f:finalizers": {}
+              }
+            }
+          },
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T12:14:13Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-upmeter",
+        "uid": "bd0c4289-a05b-48c9-a68d-8469a48b8538",
+        "resourceVersion": "44205",
+        "creationTimestamp": "2025-10-02T15:53:39Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-upmeter",
+          "module": "upmeter",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "upmeter",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T15:53:39Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "d8-user-authn",
+        "uid": "c5c52996-5adc-42c5-a151-2ba15e1ec08a",
+        "resourceVersion": "39762",
+        "creationTimestamp": "2025-10-02T15:49:40Z",
+        "labels": {
+          "app.kubernetes.io/managed-by": "Helm",
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "d8-user-authn",
+          "module": "user-authn",
+          "prometheus.deckhouse.io/rules-watcher-enabled": "true"
+        },
+        "annotations": {
+          "meta.helm.sh/release-name": "user-authn",
+          "meta.helm.sh/release-namespace": "d8-system"
+        },
+        "managedFields": [
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T15:49:40Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:meta.helm.sh/release-name": {},
+                  "f:meta.helm.sh/release-namespace": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:app.kubernetes.io/managed-by": {},
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {},
+                  "f:kubernetes.io/metadata.name": {},
+                  "f:module": {},
+                  "f:prometheus.deckhouse.io/rules-watcher-enabled": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "default",
+        "uid": "87ef5112-a582-497d-ab3c-de9706f2cd19",
+        "resourceVersion": "23",
+        "creationTimestamp": "2025-10-02T12:12:18Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "default"
+        },
+        "managedFields": [
+          {
+            "manager": "kube-apiserver",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T12:12:18Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "kube-node-lease",
+        "uid": "a5c0a8bd-83ec-44f5-9016-2392084d0794",
+        "resourceVersion": "31",
+        "creationTimestamp": "2025-10-02T12:12:18Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "kube-node-lease"
+        },
+        "managedFields": [
+          {
+            "manager": "kube-apiserver",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T12:12:18Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "kube-public",
+        "uid": "98eee009-a47b-405a-986f-14aebaa7baf6",
+        "resourceVersion": "20",
+        "creationTimestamp": "2025-10-02T12:12:18Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "kube-public"
+        },
+        "managedFields": [
+          {
+            "manager": "kube-apiserver",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T12:12:18Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "kube-system",
+        "uid": "9c0733bc-1734-4d6e-a08d-49e3ef723dd3",
+        "resourceVersion": "1739",
+        "creationTimestamp": "2025-10-02T12:12:18Z",
+        "labels": {
+          "extended-monitoring.deckhouse.io/enabled": "",
+          "heritage": "deckhouse",
+          "kubernetes.io/metadata.name": "kube-system"
+        },
+        "managedFields": [
+          {
+            "manager": "kube-apiserver",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T12:12:18Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          },
+          {
+            "manager": "deckhouse-controller",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-02T12:15:25Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  "f:extended-monitoring.deckhouse.io/enabled": {},
+                  "f:heritage": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "test-base",
+        "uid": "caf96b21-95a7-4245-9610-0ba950c9c596",
+        "resourceVersion": "3981324",
+        "creationTimestamp": "2025-10-07T09:27:13Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "test-base"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-07T09:27:13Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "user-36",
+        "uid": "575248af-f0f9-4c84-924b-bb44d1b2499b",
+        "resourceVersion": "12069531",
+        "creationTimestamp": "2025-10-17T14:50:28Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "user-36"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-17T14:50:28Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "user-5",
+        "uid": "8f4bdae5-ed05-48ce-8869-6fbff002110a",
+        "resourceVersion": "12057359",
+        "creationTimestamp": "2025-10-17T14:29:18Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "user-5"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-17T14:29:18Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "user-744",
+        "uid": "ebca168d-f357-48f1-84fc-e9e632df22d0",
+        "resourceVersion": "17029067",
+        "creationTimestamp": "2025-10-23T11:38:55Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "user-744"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-23T11:38:55Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "user-774",
+        "uid": "7a8ff649-b339-4adf-b1db-e066b92a80f1",
+        "resourceVersion": "10628838",
+        "creationTimestamp": "2025-10-15T12:43:08Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "user-774"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-15T12:43:08Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "user-801",
+        "uid": "ff073082-4f4a-4d1e-958b-862ac2272a9d",
+        "resourceVersion": "11988188",
+        "creationTimestamp": "2025-10-17T12:29:27Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "user-801"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-17T12:29:27Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "user-816",
+        "uid": "ce559e88-9291-45b4-8b01-f7522cefc4f4",
+        "resourceVersion": "17076889",
+        "creationTimestamp": "2025-10-23T13:28:06Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "user-816"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-23T13:28:06Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "user-828",
+        "uid": "310a4112-637c-4a2a-817b-6964148200f9",
+        "resourceVersion": "11995892",
+        "creationTimestamp": "2025-10-17T12:41:39Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "user-828"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-17T12:41:39Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "user-835",
+        "uid": "39899764-27ea-4e3a-a394-39c9e1c2f84b",
+        "resourceVersion": "11334405",
+        "creationTimestamp": "2025-10-16T09:46:48Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "user-835"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-16T09:46:48Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "user-845",
+        "uid": "8a7d2801-9a1e-459a-8a6c-465d2e5c8649",
+        "resourceVersion": "16049312",
+        "creationTimestamp": "2025-10-22T07:34:27Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "user-845"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-22T07:34:27Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "user-847",
+        "uid": "a04c1f19-be48-43ae-924c-8ecdfcca0ae0",
+        "resourceVersion": "11469207",
+        "creationTimestamp": "2025-10-16T16:26:02Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "user-847"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-16T16:26:02Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "user-848",
+        "uid": "1e584a0f-361c-4f25-ad7a-0c8697037491",
+        "resourceVersion": "11475588",
+        "creationTimestamp": "2025-10-16T16:41:59Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "user-848"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-16T16:41:59Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "user-852",
+        "uid": "4e0f53b1-8b4c-404e-abe8-86f3028f9eee",
+        "resourceVersion": "11468350",
+        "creationTimestamp": "2025-10-16T16:24:04Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "user-852"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-16T16:24:04Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "user-859",
+        "uid": "d2eca06e-1642-44e4-9b4f-308ab587d76e",
+        "resourceVersion": "11434589",
+        "creationTimestamp": "2025-10-16T14:59:21Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "user-859"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-16T14:59:21Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "user-871",
+        "uid": "cdba74a9-8d6b-4ff4-9f92-6c3ae782604b",
+        "resourceVersion": "11476555",
+        "creationTimestamp": "2025-10-16T16:44:14Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "user-871"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-16T16:44:14Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "metadata": {
+        "name": "user-test",
+        "uid": "9098320a-a79c-43fe-b0a1-8521fee1bf54",
+        "resourceVersion": "10520778",
+        "creationTimestamp": "2025-10-15T09:29:50Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "user-test"
+        },
+        "managedFields": [
+          {
+            "manager": "kubectl-create",
+            "operation": "Update",
+            "apiVersion": "v1",
+            "time": "2025-10-15T09:29:50Z",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:labels": {
+                  ".": {},
+                  "f:kubernetes.io/metadata.name": {}
+                }
+              }
+            }
+          }
+        ]
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    }
+  ]

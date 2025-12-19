@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Документ: {{ document.name }} — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Документы и процессы / Документы / {{ document.name }}
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">{{ document.name }}</h1>
+<p class="cp-page-subtitle">
+    Автор: {{ document.author.username }} — размер: {{ document.size }} байт — обновлён {{ document.updated_at }}
+</p>
+
+{% if is_text %}
+    <form method="post">
+        {% csrf_token %}
+        <textarea name="content" rows="20" style="width: 100%;">{{ text_content }}</textarea>
+        <button type="submit">Сохранить</button>
+    </form>
+    <p class="cp-link-muted">
+        Для базового совместного редактирования достаточно, чтобы пользователи открывали страницу и сохраняли изменения;
+        при сохранении другие пользователи увидят обновлённый текст после перезагрузки.
+        Для полноценного real-time редактирования потребуется интеграция с OnlyOffice/Collabora.
+    </p>
+{% elif is_pdf %}
+    <p class="cp-link-muted">
+        PDF доступен только для просмотра и замены (при наличии прав). Для просмотра откройте файл в отдельной вкладке.
+    </p>
+    <p><a href="{% url 'document_download' document.pk %}" class="cp-menu-link">Открыть / скачать PDF</a></p>
+{% elif is_office and collabora_enabled %}
+    <p class="cp-link-muted">
+        Документ открыт в онлайн‑редакторе Collabora Online (LibreOffice). Несколько пользователей могут редактировать его одновременно,
+        изменения синхронизируются в реальном времени.
+    </p>
+    <iframe id="collabora-editor" src="{{ collabora_wopi_src }}" style="width: 100%; height: 800px; border: 1px solid #ddd; border-radius: 4px;" allow="clipboard-read; clipboard-write" onerror="console.error('Ошибка загрузки Collabora')"></iframe>
+    <script>
+        document.getElementById('collabora-editor').onload = function() {
+            console.log('Collabora editor загружен');
+        };
+        document.getElementById('collabora-editor').onerror = function() {
+            console.error('Ошибка загрузки Collabora editor');
+            this.style.display = 'none';
+            var errorDiv = document.createElement('div');
+            errorDiv.innerHTML = '<p style="padding: 20px; color: red;">Ошибка: не удалось загрузить Collabora Online. Проверьте настройки COLLABORA_BASE_URL и доступность сервиса.</p>';
+            this.parentNode.insertBefore(errorDiv, this);
+        };
+    </script>
+{% elif is_office and onlyoffice_enabled %}
+    <p class="cp-link-muted">
+        Документ открыт в онлайн‑редакторе OnlyOffice. Несколько пользователей могут редактировать его одновременно,
+        изменения синхронизируются через DocumentServer.
+    </p>
+    <div id="onlyoffice-editor" style="height: 700px;"></div>
+    <script>
+        (function () {
+            var config = {{ onlyoffice_config|safe }};
+            var editorDiv = document.getElementById('onlyoffice-editor');
+            var script = document.createElement('script');
+            // Используем абсолютный URL для OnlyOffice API
+            // Браузер загружает скрипт напрямую из OnlyOffice через nginx
+            var apiUrl = '{{ onlyoffice_base_url }}web-apps/apps/api/documents/api.js';
+            console.log('Загрузка OnlyOffice API из:', apiUrl);
+            
+            // Для HTTPS скриптов добавляем crossOrigin для CORS
+            if (apiUrl.startsWith('https://')) {
+                script.crossOrigin = 'anonymous';
+            }
+            
+            script.src = apiUrl;
+            
+            // Добавляем обработку ошибок загрузки
+            script.addEventListener('error', function(e) {
+                console.error('Ошибка загрузки скрипта OnlyOffice:', e);
+                console.error('URL:', apiUrl);
+                console.error('Возможные причины:');
+                console.error('1. SSL сертификат не доверен браузером');
+                console.error('2. CORS проблема');
+                console.error('3. OnlyOffice недоступен');
+            });
+            script.onload = function() {
+                if (typeof DocsAPI !== 'undefined') {
+                    try {
+                        new DocsAPI.DocEditor("onlyoffice-editor", config);
+                    } catch (e) {
+                        console.error('Ошибка инициализации OnlyOffice:', e);
+                        editorDiv.innerHTML = '<p style="padding: 20px; color: red;">Ошибка инициализации OnlyOffice редактора. Проверьте консоль браузера для деталей.</p>';
+                    }
+                } else {
+                    console.error('OnlyOffice API не загружен');
+                    editorDiv.innerHTML = '<p style="padding: 20px; color: red;">Ошибка: не удалось загрузить OnlyOffice API. Проверьте настройки ONLYOFFICE_BASE_URL: {{ onlyoffice_base_url }}</p>';
+                }
+            };
+            script.onerror = function(e) {
+                console.error('Ошибка загрузки OnlyOffice API скрипта:', e);
+                var apiUrl = '{{ onlyoffice_base_url }}web-apps/apps/api/documents/api.js';
+                console.error('URL API:', apiUrl);
+                
+                var errorMsg = '<div style="padding: 20px; margin: 20px 0; color: #d32f2f; background: #ffebee; border: 2px solid #f44336; border-radius: 4px;">';
+                errorMsg += '<h3 style="margin-top: 0; color: #c62828;">❌ Ошибка загрузки OnlyOffice API скрипта</h3>';
+                errorMsg += '<p><strong>URL:</strong> <code style="background: #fff; padding: 2px 6px; border-radius: 3px; font-family: monospace;">' + apiUrl + '</code></p>';
+                errorMsg += '<p><strong>Наиболее вероятная причина:</strong> Браузер блокирует самоподписанный SSL сертификат.</p>';
+                errorMsg += '<p><strong>Решение:</strong></p>';
+                errorMsg += '<ol style="margin-left: 20px;">';
+                errorMsg += '<li><strong>Установите SSL сертификат OnlyOffice в доверенные (рекомендуется):</strong><br>';
+                errorMsg += '   Откройте PowerShell <strong>от имени администратора</strong> и выполните:<br>';
+                errorMsg += '   <code style="background: #fff; padding: 4px 8px; border-radius: 3px; font-family: monospace; display: inline-block; margin: 4px 0;">cd "' + window.location.origin.replace(/\/$/, '') + '/.."; .\\certificates\\install-cert.ps1</code><br>';
+                errorMsg += '   После установки <strong>перезапустите браузер</strong> и обновите страницу.</li>';
+                errorMsg += '<li><strong>Или временно разрешите небезопасный контент:</strong><br>';
+                errorMsg += '   Если сертификат установить нельзя, попробуйте открыть URL напрямую в браузере:<br>';
+                errorMsg += '   <a href="' + apiUrl + '" target="_blank" style="color: #1976d2; text-decoration: underline;">' + apiUrl + '</a><br>';
+                errorMsg += '   Нажмите "Дополнительно" → "Продолжить" при предупреждении о небезопасном сайте.</li>';
+                errorMsg += '<li><strong>Проверьте логи:</strong><br>';
+                errorMsg += '   <code style="background: #fff; padding: 2px 6px; border-radius: 3px; font-family: monospace;">docker-compose logs onlyoffice_nginx --tail 50</code></li>';
+                errorMsg += '</ol>';
+                errorMsg += '</div>';
+                editorDiv.innerHTML = errorMsg;
+            };
+            document.head.appendChild(script);
+        })();
+    </script>
+{% else %}
+    <p class="cp-link-muted">
+        Для этого типа файла доступно только скачивание.
+    </p>
+    <p><a href="{% url 'document_download' document.pk %}" class="cp-menu-link">Скачать файл</a></p>
+{% endif %}
+{% endblock %}
+
+
+

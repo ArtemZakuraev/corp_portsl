@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Документы — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Документы и процессы / Документы
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">Документы</h1>
+<p class="cp-page-subtitle">
+    Централизованное хранилище файлов. Загрузите новый документ или откройте существующий.
+</p>
+
+<p><a href="{% url 'documents_upload' %}" class="cp-menu-link">Загрузить документ</a></p>
+
+<ul class="cp-card-list">
+    {% for doc in documents %}
+        <li class="cp-link-muted">
+            <strong>{{ doc.name }}</strong>
+            — {{ doc.size }} байт
+            — изменён {{ doc.updated_at }}
+            — автор: {{ doc.author.username }}
+            — <a href="{% url 'document_download' doc.pk %}">скачать</a>
+            — <a href="{% url 'document_edit' doc.pk %}">открыть</a>
+        </li>
+    {% empty %}
+        <li class="cp-link-muted">Документов пока нет.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

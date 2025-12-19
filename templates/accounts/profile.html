@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Личный кабинет
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">Личный кабинет</h1>
+<p class="cp-page-subtitle">
+    Здесь вы можете заполнить и обновить свои личные данные, настроить внешний вид портала и сформировать график отпусков.
+</p>
+
+<div class="cp-dashboard-grid">
+    <section class="cp-card">
+        <header class="cp-card-header">
+            <div>
+                <div class="cp-card-title">Личные данные</div>
+                <div class="cp-card-subtitle">ФИО, департамент, отдел, должность и телефоны</div>
+            </div>
+        </header>
+        <p class="cp-link-muted">
+            Email (верифицированный, изменить нельзя): <strong>{{ request.user.email }}</strong>
+        </p>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="profile">
+            {{ form.as_p }}
+            <button type="submit">Сохранить профиль</button>
+        </form>
+        {% if request.user.profile.photo %}
+            <p style="margin-top: 12px;">
+                <img src="{{ request.user.profile.photo.url }}" alt="Фотография сотрудника" style="max-width: 160px; border-radius: 8px;">
+            </p>
+        {% endif %}
+        <p style="margin-top: 12px;">
+            <a href="{% url 'password_change' %}" class="cp-menu-link">Изменить пароль</a>
+        </p>
+    </section>
+
+    <section class="cp-card">
+        <header class="cp-card-header">
+            <div>
+                <div class="cp-card-title">Оформление портала</div>
+                <div class="cp-card-subtitle">Выберите тему и цвета интерфейса</div>
+            </div>
+        </header>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="theme">
+            {{ theme_form.as_p }}
+            <button type="submit">Сохранить оформление</button>
+        </form>
+        <p class="cp-link-muted">
+            При режиме "Стиль системы по умолчанию" используются стандартные цвета портала.
+            При выборе пользовательских цветов изменения будут применяться только к вашему интерфейсу.
+        </p>
+    </section>
+
+    <section class="cp-card">
+        <header class="cp-card-header">
+            <div>
+                <div class="cp-card-title">Настройки Mattermost</div>
+                <div class="cp-card-subtitle">Авторизация для работы с корпоративными чатами</div>
+            </div>
+        </header>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="mattermost">
+            {{ mattermost_form.as_p }}
+            <button type="submit">Сохранить настройки Mattermost</button>
+        </form>
+        <p class="cp-link-muted">
+            Укажите логин и пароль для авторизации на сервере Mattermost. Эти данные используются для доступа к чатам в разделе "Чаты".
+        </p>
+    </section>
+
+    <section class="cp-card">
+        <header class="cp-card-header">
+            <div>
+                <div class="cp-card-title">Настройки CalDAV</div>
+                <div class="cp-card-subtitle">Авторизация для работы с календарем</div>
+            </div>
+        </header>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="caldav">
+            {{ caldav_form.as_p }}
+            <button type="submit">Сохранить настройки CalDAV</button>
+        </form>
+        <p class="cp-link-muted">
+            Укажите email и пароль для подключения к серверу CalDAV. Эти данные используются для отображения встреч в разделе "Мои встречи". 
+            URL календаря формируется автоматически по шаблону: $server/SOGo/dav/$email/Calendar/personal/
+        </p>
+    </section>
+
+    <section class="cp-card">
+        <header class="cp-card-header">
+            <div>
+                <div class="cp-card-title">Настройки левого меню</div>
+                <div class="cp-card-subtitle">Настройте ширину и высоту сайдбара под свой экран</div>
+            </div>
+        </header>
+        <form method="post" id="sidebar-settings-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="sidebar">
+            <div style="margin-bottom: 16px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    {{ sidebar_form.sidebar_custom_enabled }}
+                    <span>Включить настройку сайдбара</span>
+                </label>
+            </div>
+            <div id="sidebar-settings-fields" style="display: {% if sidebar_form.sidebar_custom_enabled.value %}block{% else %}none{% endif %};">
+                <div style="margin-bottom: 16px;">
+                    <label for="{{ sidebar_form.sidebar_width.id_for_label }}">{{ sidebar_form.sidebar_width.label }}</label>
+                    {{ sidebar_form.sidebar_width }}
+                    {% if sidebar_form.sidebar_width.help_text %}
+                        <p class="cp-link-muted" style="font-size: 12px; margin-top: 4px;">{{ sidebar_form.sidebar_width.help_text }}</p>
+                    {% endif %}
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label for="{{ sidebar_form.sidebar_height.id_for_label }}">{{ sidebar_form.sidebar_height.label }}</label>
+                    {{ sidebar_form.sidebar_height }}
+                    {% if sidebar_form.sidebar_height.help_text %}
+                        <p class="cp-link-muted" style="font-size: 12px; margin-top: 4px;">{{ sidebar_form.sidebar_height.help_text }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <button type="submit">Сохранить настройки меню</button>
+        </form>
+        <p class="cp-link-muted">
+            Включите настройку, чтобы изменить размеры левого меню под свой экран. Изменения применяются сразу после сохранения.
+        </p>
+    </section>
+
+    <section class="cp-card">
+        <header class="cp-card-header">
+            <div>
+                <div class="cp-card-title">График отпусков</div>
+                <div class="cp-card-subtitle">Информация о ваших заявках на отпуск</div>
+            </div>
+        </header>
+        
+        <p class="cp-link-muted" style="margin-bottom: 16px;">
+            Для добавления нового отпуска перейдите в раздел 
+            <a href="{% url 'vacations' %}" style="color: var(--cp-primary); text-decoration: underline;">Планирование отпусков</a>.
+        </p>
+
+        <div class="cp-card-subtitle" style="margin-top: 12px;">Ваши последние заявки по отпускам:</div>
+        <ul class="cp-card-list">
+            {% for req in vacation_requests %}
+                <li class="cp-link-muted">
+                    {{ req.created_at|date:"d.m.Y" }} — 
+                    {% if req.department %}{{ req.department }}{% endif %}
+                    {% if req.unit %} / {{ req.unit }}{% endif %}
+                    {% if req.position %} — {{ req.position }}{% endif %}
+                    {% if req.periods.all %}
+                        <ul style="margin-top: 4px; margin-left: 20px;">
+                            {% for period in req.periods.all %}
+                                <li style="font-size: 12px;">
+                                    {{ period.start_date|date:"d.m.Y" }} - {{ period.end_date|date:"d.m.Y" }} 
+                                    ({{ period.get_vacation_type_display }})
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </li>
+            {% empty %}
+                <li class="cp-link-muted">Вы ещё не заполняли график отпусков.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <script>
+        function toggleSidebarSettings() {
+            const checkbox = document.querySelector('#id_sidebar_custom_enabled');
+            const fields = document.getElementById('sidebar-settings-fields');
+            if (checkbox && fields) {
+                fields.style.display = checkbox.checked ? 'block' : 'none';
+            }
+        }
+    </script>
+</div>
+{% endblock %}
+
+
+

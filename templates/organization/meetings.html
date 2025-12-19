@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Мои встречи — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Рабочий стол / Мои встречи
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">Мои встречи</h1>
+<p class="cp-page-subtitle">
+    Встречи из вашего календаря CalDAV. Календарь подключается по настройкам в вашем профиле.
+</p>
+
+{% if not caldav_configured %}
+    <div class="cp-card" style="background-color: #fff3cd; border-color: #ffc107;">
+        <div style="padding: 16px;">
+            <strong>CalDAV сервер не настроен</strong>
+            <p class="cp-link-muted" style="margin-top: 8px;">
+                Для отображения встреч администратор должен настроить CalDAV сервер в разделе 
+                <a href="{% url 'portal_settings_page' %}">Настройки портала</a>.
+            </p>
+        </div>
+    </div>
+{% elif error_message %}
+    <div class="cp-card" style="background-color: #f8d7da; border-color: #dc3545;">
+        <div style="padding: 16px;">
+            <strong>Ошибка при получении встреч</strong>
+            <p class="cp-link-muted" style="margin-top: 8px;">{{ error_message }}</p>
+            <p class="cp-link-muted" style="margin-top: 8px;">
+                Проверьте настройки CalDAV в вашем 
+                <a href="{% url 'profile' %}">профиле</a> (email и пароль для CalDAV).
+            </p>
+        </div>
+    </div>
+{% elif not user_caldav_configured %}
+    <div class="cp-card" style="background-color: #fff3cd; border-color: #ffc107;">
+        <div style="padding: 16px;">
+            <strong>Настройки CalDAV не указаны</strong>
+            <p class="cp-link-muted" style="margin-top: 8px;">
+                Для получения встреч из CalDAV необходимо указать email и пароль для CalDAV в вашем 
+                <a href="{% url 'profile' %}">профиле</a>.
+            </p>
+        </div>
+    </div>
+{% else %}
+    <section class="cp-card">
+        <header class="cp-card-header">
+            <div>
+                <div class="cp-card-title">Предстоящие встречи</div>
+                <div class="cp-card-subtitle">Встречи из календаря CalDAV на ближайшие 30 дней</div>
+            </div>
+        </header>
+        
+        {% if meetings %}
+            <div class="cp-table-wrapper" style="margin-top: 16px;">
+                <table class="cp-table">
+                    <thead>
+                        <tr>
+                            <th>Дата и время</th>
+                            <th>Название</th>
+                            <th>Описание</th>
+                            <th>Место</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for meeting in meetings %}
+                            <tr>
+                                <td>
+                                    {% if meeting.start %}
+                                        {% if meeting.end %}
+                                            {% if meeting.start|date:"Y-m-d" == meeting.end|date:"Y-m-d" %}
+                                                <strong>{{ meeting.start|date:"d.m.Y" }}</strong>
+                                                {% if meeting.start|date:"H:i" != "00:00" or meeting.start|date:"H:i" == "" %}
+                                                    <br>{{ meeting.start|date:"H:i" }} - {{ meeting.end|date:"H:i" }}
+                                                {% else %}
+                                                    <br>Весь день
+                                                {% endif %}
+                                            {% else %}
+                                                <strong>{{ meeting.start|date:"d.m.Y" }}</strong>
+                                                {% if meeting.start|date:"H:i" != "00:00" or meeting.start|date:"H:i" == "" %}
+                                                    <br>{{ meeting.start|date:"H:i" }}<br>
+                                                {% endif %}
+                                                до {{ meeting.end|date:"d.m.Y" }}
+                                                {% if meeting.end|date:"H:i" != "00:00" or meeting.end|date:"H:i" == "" %}
+                                                    {{ meeting.end|date:"H:i" }}
+                                                {% endif %}
+                                            {% endif %}
+                                        {% else %}
+                                            <strong>{{ meeting.start|date:"d.m.Y" }}</strong>
+                                            {% if meeting.start|date:"H:i" != "00:00" or meeting.start|date:"H:i" == "" %}
+                                                <br>{{ meeting.start|date:"H:i" }}
+                                            {% endif %}
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="cp-link-muted">Дата не указана</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ meeting.summary|default:"Без названия" }}</strong>
+                                </td>
+                                <td>
+                                    {% if meeting.description %}
+                                        <span class="cp-link-muted">{{ meeting.description|truncatewords:20 }}</span>
+                                    {% else %}
+                                        <span class="cp-link-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if meeting.location %}
+                                        <span class="cp-link-muted">{{ meeting.location }}</span>
+                                    {% else %}
+                                        <span class="cp-link-muted">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="padding: 40px; text-align: center;">
+                <p class="cp-link-muted">У вас нет запланированных встреч на ближайшие 30 дней.</p>
+                <p class="cp-link-muted" style="margin-top: 8px;">
+                    Встречи будут отображаться здесь после их добавления в ваш CalDAV календарь.
+                </p>
+            </div>
+        {% endif %}
+    </section>
+{% endif %}
+{% endblock %}
+

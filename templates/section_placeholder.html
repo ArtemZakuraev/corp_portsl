@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+{{ title }}
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">{{ title }}</h1>
+{% if subtitle %}
+    <p class="cp-page-subtitle">{{ subtitle }}</p>
+{% endif %}
+
+<p class="cp-link-muted">
+    Раздел находится в разработке. Здесь будет реализован полный функционал согласно техническому заданию
+    (интеграции, бизнес-логика и интерфейсы).
+    Сейчас вы видите заглушку, чтобы навигация по порталу уже работала и имела единый дизайн.
+    </p>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

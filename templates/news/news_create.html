@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Публикация новости — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Коммуникации / Новости / Публикация
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">Публикация новости</h1>
+<p class="cp-page-subtitle">
+    Заполните тему и текст новости. Текст может содержать HTML-разметку: заголовки (&lt;h1&gt;..&lt;/h1&gt;),
+    списки, ссылки и изображения (&lt;img src="..."&gt;).
+    Вы можете загрузить графические файлы (JPG, PNG, GIF, WebP), которые будут автоматически прикреплены к новости.
+    Самая новая новость будет отправлена по email всем сотрудникам и отображена на рабочем столе.
+</p>
+
+{% if error %}
+    <p class="cp-card-subtitle" style="color: #c00;">{{ error }}</p>
+{% endif %}
+
+<section class="cp-card">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <p>
+            <label>Тема:<br>
+                <input type="text" name="title" value="{{ title_value }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </label>
+        </p>
+        <p>
+            <label>Текст новости (HTML допускается):<br>
+                <textarea name="body" rows="12" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;">{{ body_value }}</textarea>
+            </label>
+        </p>
+        <p>
+            <label>
+                Изображения (можно выбрать несколько файлов):<br>
+                <input 
+                    type="file" 
+                    name="images" 
+                    accept="image/jpeg,image/png,image/gif,image/webp" 
+                    multiple
+                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: #fff;"
+                    onchange="previewImages(this)"
+                >
+            </label>
+            <small style="color: #666; font-size: 11px;">
+                Поддерживаемые форматы: JPG, PNG, GIF, WebP. Можно выбрать несколько файлов одновременно.
+            </small>
+        </p>
+        <div id="image-preview" style="margin-top: 12px; display: none;">
+            <p style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">Предпросмотр загружаемых изображений:</p>
+            <div id="preview-container" style="display: flex; flex-wrap: wrap; gap: 12px;"></div>
+        </div>
+        <p style="margin-top: 16px;">
+            <button type="submit" style="padding: 10px 20px; background-color: var(--cp-accent); color: var(--cp-accent-contrast); border: none; border-radius: 6px; font-weight: 500; cursor: pointer;">
+                Опубликовать новость
+            </button>
+        </p>
+    </form>
+</section>
+
+<script>
+function previewImages(input) {
+    const previewContainer = document.getElementById('preview-container');
+    const previewDiv = document.getElementById('image-preview');
+    
+    // Очищаем предыдущие превью
+    previewContainer.innerHTML = '';
+    
+    if (input.files && input.files.length > 0) {
+        previewDiv.style.display = 'block';
+        
+        Array.from(input.files).forEach((file, index) => {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgDiv = document.createElement('div');
+                    imgDiv.style.cssText = 'position: relative; border: 1px solid #ddd; border-radius: 6px; padding: 8px; background: #f9f9f9;';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.cssText = 'max-width: 150px; max-height: 150px; object-fit: contain; border-radius: 4px;';
+                    img.alt = file.name;
+                    
+                    const fileName = document.createElement('div');
+                    fileName.textContent = file.name;
+                    fileName.style.cssText = 'font-size: 11px; color: #666; margin-top: 4px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+                    
+                    imgDiv.appendChild(img);
+                    imgDiv.appendChild(fileName);
+                    previewContainer.appendChild(imgDiv);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    } else {
+        previewDiv.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

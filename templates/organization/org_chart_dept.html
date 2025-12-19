@@ -1,0 +1,157 @@
+{% comment %}
+Рекурсивный шаблон для отображения департамента и его поддепартаментов
+{% endcomment %}
+<div class="org-chart-item org-chart-department">
+    <div class="org-chart-card org-chart-dept-card">
+        <div class="org-chart-card-header">
+            <div class="org-chart-card-icon">🏢</div>
+            <div class="org-chart-card-content">
+                <div class="org-chart-card-title">{{ department.name }}</div>
+                {% if department.head %}
+                    <div class="org-chart-card-subtitle">
+                        Руководитель: {{ department.head.get_full_name|default:department.head.username }}
+                    </div>
+                {% else %}
+                    <div class="org-chart-card-subtitle">Руководитель не назначен</div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% comment %} Руководитель департамента внутри карточки {% endcomment %}
+        {% if department.head %}
+            <div class="org-chart-employees-list" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--cp-border);">
+                <div class="org-chart-employee-item org-chart-head-item">
+                    <div class="org-chart-employee-header">
+                        {% with profile=department.head.profile %}
+                            {% if profile.photo %}
+                                <img src="{{ profile.photo.url }}" alt="Фото" class="org-chart-avatar-small">
+                            {% else %}
+                                <div class="org-chart-avatar-placeholder-small">
+                                    {{ profile.first_name|default:department.head.first_name|first }}{{ profile.last_name|default:department.head.last_name|first }}
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                        <div class="org-chart-employee-info">
+                            <div class="org-chart-employee-name">
+                                {% with profile=department.head.profile %}
+                                    {% if profile.last_name or profile.first_name or profile.middle_name %}
+                                        {{ profile.last_name }} {{ profile.first_name }} {{ profile.middle_name }}
+                                    {% else %}
+                                        {{ department.head.last_name }} {{ department.head.first_name }}
+                                    {% endif %}
+                                {% endwith %}
+                                <span style="color: var(--cp-accent); font-size: 10px; margin-left: 6px;">👑</span>
+                            </div>
+                            <div class="org-chart-employee-email">{{ department.head.email }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if department.sub_departments.all or department.units.all %}
+        <div class="org-chart-children">
+            {% comment %} Подчинённые департаменты {% endcomment %}
+            {% for sub_dept in department.sub_departments.all %}
+                <div class="org-chart-item org-chart-department" style="margin-bottom: 24px;">
+                    <div class="org-chart-connector"></div>
+                    {% include "organization/org_chart_dept.html" with department=sub_dept %}
+                </div>
+            {% endfor %}
+
+            {% comment %} Отделы департамента {% endcomment %}
+            {% if department.units.all %}
+                <div class="org-chart-units">
+                    {% for unit in department.units.all %}
+                        <div class="org-chart-item org-chart-unit">
+                            <div class="org-chart-connector"></div>
+                            <div class="org-chart-card org-chart-unit-card">
+                                <div class="org-chart-card-header">
+                                    <div class="org-chart-card-icon">📁</div>
+                                    <div class="org-chart-card-content">
+                                        <div class="org-chart-card-title">{{ unit.name }}</div>
+                                        {% if unit.head %}
+                                            <div class="org-chart-card-subtitle">
+                                                Руководитель: {{ unit.head.get_full_name|default:unit.head.username }}
+                                            </div>
+                                        {% else %}
+                                            <div class="org-chart-card-subtitle">Руководитель не назначен</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                {% comment %} Сотрудники отдела внутри карточки: сначала руководитель, затем остальные {% endcomment %}
+                                {% if unit.employees.all %}
+                                    <div class="org-chart-employees-list" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--cp-border);">
+                                        {% comment %} Руководитель отдела {% endcomment %}
+                                        {% if unit.head %}
+                                            <div class="org-chart-employee-item org-chart-head-item">
+                                                <div class="org-chart-employee-header">
+                                                    {% with profile=unit.head.profile %}
+                                                        {% if profile.photo %}
+                                                            <img src="{{ profile.photo.url }}" alt="Фото" class="org-chart-avatar-small">
+                                                        {% else %}
+                                                            <div class="org-chart-avatar-placeholder-small">
+                                                                {{ profile.first_name|default:unit.head.first_name|first }}{{ profile.last_name|default:unit.head.last_name|first }}
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                    <div class="org-chart-employee-info">
+                                                        <div class="org-chart-employee-name">
+                                                            {% with profile=unit.head.profile %}
+                                                                {% if profile.last_name or profile.first_name or profile.middle_name %}
+                                                                    {{ profile.last_name }} {{ profile.first_name }} {{ profile.middle_name }}
+                                                                {% else %}
+                                                                    {{ unit.head.last_name }} {{ unit.head.first_name }}
+                                                                {% endif %}
+                                                            {% endwith %}
+                                                            <span style="color: var(--cp-accent); font-size: 10px; margin-left: 6px;">👑</span>
+                                                        </div>
+                                                        <div class="org-chart-employee-email">{{ unit.head.email }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        {% comment %} Остальные сотрудники отдела {% endcomment %}
+                                        {% for emp in unit.employees.all %}
+                                            {% if emp != unit.head %}
+                                                <div class="org-chart-employee-item">
+                                                    <div class="org-chart-employee-header">
+                                                        {% with profile=emp.profile %}
+                                                            {% if profile.photo %}
+                                                                <img src="{{ profile.photo.url }}" alt="Фото" class="org-chart-avatar-small">
+                                                            {% else %}
+                                                                <div class="org-chart-avatar-placeholder-small">
+                                                                    {{ profile.first_name|default:emp.first_name|first }}{{ profile.last_name|default:emp.last_name|first }}
+                                                                </div>
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                        <div class="org-chart-employee-info">
+                                                            <div class="org-chart-employee-name">
+                                                                {% with profile=emp.profile %}
+                                                                    {% if profile.last_name or profile.first_name or profile.middle_name %}
+                                                                        {{ profile.last_name }} {{ profile.first_name }} {{ profile.middle_name }}
+                                                                    {% else %}
+                                                                        {{ emp.last_name }} {{ emp.first_name }}
+                                                                    {% endif %}
+                                                                {% endwith %}
+                                                            </div>
+                                                            <div class="org-chart-employee-email">{{ emp.email }}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+

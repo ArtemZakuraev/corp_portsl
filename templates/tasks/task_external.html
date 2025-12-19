@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Задача: {{ task.title }} — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Задача / Внешний доступ
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">{{ task.title }}</h1>
+<p class="cp-page-subtitle">
+    Эта страница доступна по уникальной ссылке и не требует авторизации в портале.
+    Пожалуйста, выполните указанные действия и, при необходимости, свяжитесь с вашим руководителем.
+</p>
+
+<div class="cp-card">
+    <div class="cp-card-header">
+        <div class="cp-card-title">Описание задачи</div>
+    </div>
+    <p>{{ task.description|linebreaksbr }}</p>
+    {% if task.due_date %}
+        <p class="cp-link-muted">Срок выполнения: {{ task.due_date }}</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

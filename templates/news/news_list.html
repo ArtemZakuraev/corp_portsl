@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Новости — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Коммуникации / Новости
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">Новости</h1>
+<p class="cp-page-subtitle">
+    Лента корпоративных новостей. Самая свежая новость отправляется по email всем сотрудникам.
+</p>
+
+{% if is_moderator %}
+    <p>
+        <a href="{% url 'news_create' %}" class="cp-menu-link">+ Опубликовать новость</a>
+    </p>
+{% endif %}
+
+<section class="cp-card">
+    <header class="cp-card-header">
+        <div>
+            <div class="cp-card-title">Лента новостей</div>
+            <div class="cp-card-subtitle">Последние публикации</div>
+        </div>
+    </header>
+
+    <ul class="cp-card-list">
+        {% for item in news_items %}
+            <li style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #f0f0f0;">
+                <div class="cp-card-title" style="font-size: 16px; margin-bottom: 6px; font-weight: 600;">
+                    {{ item.title }}
+                </div>
+                <div class="cp-link-muted" style="font-size: 12px; margin-bottom: 12px;">
+                    Опубликовано {{ item.created_at|date:"d.m.Y H:i" }}{% if item.author %} — {{ item.author.get_full_name|default:item.author.username }}{% endif %}
+                </div>
+                
+                {% if item.images.all %}
+                    <div style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 12px;">
+                        {% for img in item.images.all %}
+                            <div style="border: 1px solid #ddd; border-radius: 6px; padding: 4px; background: #fafafa;">
+                                <img 
+                                    src="{{ img.image.url }}" 
+                                    alt="{{ img.alt_text|default:item.title }}"
+                                    style="max-width: 300px; max-height: 300px; object-fit: contain; border-radius: 4px; display: block; cursor: pointer;"
+                                    onclick="openImageModal('{{ img.image.url }}', '{{ img.alt_text|default:item.title }}')"
+                                >
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="cp-card-subtitle" style="white-space: pre-wrap; line-height: 1.6;">
+                    {{ item.body|safe }}
+                </div>
+            </li>
+        {% empty %}
+            <li class="cp-link-muted">Пока нет опубликованных новостей.</li>
+        {% endfor %}
+    </ul>
+    
+    {% if news_items %}
+    <div id="image-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; align-items: center; justify-content: center; cursor: pointer;" onclick="closeImageModal()">
+        <img id="modal-image" src="" alt="" style="max-width: 90%; max-height: 90%; object-fit: contain;">
+    </div>
+    
+    <script>
+    function openImageModal(imageUrl, altText) {
+        const modal = document.getElementById('image-modal');
+        const modalImg = document.getElementById('modal-image');
+        modalImg.src = imageUrl;
+        modalImg.alt = altText;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeImageModal() {
+        const modal = document.getElementById('image-modal');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    
+    // Закрытие по Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeImageModal();
+        }
+    });
+    </script>
+    {% endif %}
+</section>
+{% endblock %}
+
+

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Вход в систему — {{ portal_settings.site_name }}{% endblock %}
+
+{% block breadcrumbs %}
+Аутентификация / Вход
+{% endblock %}
+
+{% block content %}
+<h1 class="cp-page-title">Вход в систему</h1>
+<p class="cp-page-subtitle">
+    Пожалуйста, введите ваши учетные данные для входа в корпоративный портал.
+</p>
+
+{% if form.errors %}
+    <p class="cp-link-muted">Неверное имя пользователя или пароль. Попробуйте ещё раз.</p>
+{% endif %}
+
+<form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    {{ form.as_p }}
+    <button type="submit">Войти</button>
+</form>
+{% endblock %}
+
+
+
+
+
+
+
+
+
