@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}Панель управления - Корпоративный портал{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ total_employees }}</div>
+        <div class="stat-label">Сотрудников</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ total_departments }}</div>
+        <div class="stat-label">Отделов</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ recent_employees|length }}</div>
+        <div class="stat-label">Новых за неделю</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">100%</div>
+        <div class="stat-label">Активность</div>
+    </div>
+</div>
+
+<div class="grid grid-2">
+    <div class="glass-card">
+        <h3>📊 Структура компании</h3>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Отдел</th>
+                        <th>Сотрудников</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dept in departments %}
+                    <tr>
+                        <td>{{ dept.name }}</td>
+                        <td>{{ dept.employee_count }}</td>
+                        <td>
+                            <a href="{% url 'employees:department_detail' dept.pk %}" class="glass-button" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">
+                                Подробнее
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">Отделы не найдены</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="glass-card">
+        <h3>👥 Новые сотрудники</h3>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ФИО</th>
+                        <th>Должность</th>
+                        <th>Отдел</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in recent_employees %}
+                    <tr>
+                        <td>
+                            <div class="flex flex-center gap-2">
+                                {% if employee.avatar %}
+                                    <img src="{{ employee.avatar.url }}" alt="{{ employee.get_full_name }}" class="avatar">
+                                {% else %}
+                                    <div class="avatar" style="background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.875rem;">
+                                        {{ employee.user.first_name|first }}{{ employee.user.last_name|first }}
+                                    </div>
+                                {% endif %}
+                                <span>{{ employee.get_full_name }}</span>
+                            </div>
+                        </td>
+                        <td>{{ employee.position.name|default:"—" }}</td>
+                        <td>{{ employee.position.department.name|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">Сотрудники не найдены</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-3">
+            <a href="{% url 'employees:employee_list' %}" class="glass-button primary">
+                Все сотрудники
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card mt-4">
+    <h3>🏢 Организационная структура</h3>
+    <p class="text-muted">Интерактивная схема подчиненности и департаментов</p>
+    <div id="org-chart" class="mt-3" style="min-height: 400px; background: var(--glass-bg-dark); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+        <div class="text-center">
+            <div class="spinner mb-3"></div>
+            <p class="text-muted">Загрузка организационной структуры...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load organization chart data
+    fetch('{% url "employees:organization_chart" %}')
+        .then(response => response.json())
+        .then(data => {
+            const orgChartContainer = document.getElementById('org-chart');
+            if (data.chart && data.chart.length > 0) {
+                orgChartContainer.innerHTML = renderOrgChart(data.chart);
+            } else {
+                orgChartContainer.innerHTML = '<p class="text-center text-muted">Организационная структура не настроена</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading org chart:', error);
+            document.getElementById('org-chart').innerHTML = '<p class="text-center text-muted">Ошибка загрузки данных</p>';
+        });
+});
+
+function renderOrgChart(nodes, level = 0) {
+    if (!nodes || nodes.length === 0) return '';
+    
+    let html = '<div class="org-chart-tree">';
+    nodes.forEach(node => {
+        html += `
+            <div class="org-node glass-card" style="margin-left: ${level * 20}px;">
+                <strong>${node.name}</strong><br>
+                <small class="text-muted">${node.position || ''}</small><br>
+                <small class="text-muted">${node.department || ''}</small>
+            </div>
+        `;
+        if (node.children && node.children.length > 0) {
+            html += renderOrgChart(node.children, level + 1);
+        }
+    });
+    html += '</div>';
+    return html;
+}
+</script>
+
+<style>
+.org-chart-tree {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.org-node {
+    max-width: 300px;
+    transition: all var(--transition-base);
+}
+
+.org-node:hover {
+    transform: translateX(8px);
+    border-color: var(--primary-color);
+}
+</style>
+{% endblock %}
