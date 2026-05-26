@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Страница не найдена{% endblock %}
+
+{% block content %}
+<div class="flex flex-center" style="min-height: 60vh;">
+    <div class="glass-card text-center" style="max-width: 500px; width: 100%;">
+        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--text-light); opacity: 0.5; margin-bottom: 2rem;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <h1 style="font-size: 4rem; margin-bottom: 0.5rem;">404</h1>
+        <h2>Страница не найдена</h2>
+        <p class="text-muted mb-4">
+            К сожалению, страница, которую вы ищете, не существует или была перемещена.
+        </p>
+        <a href="{% url 'employees:dashboard' %}" class="glass-button primary">
+            Вернуться на главную
+        </a>
+    </div>
+</div>
+{% endblock %}

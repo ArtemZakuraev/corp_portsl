@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Журнал сообщений - Mattermost{% endblock %}
+
+{% block content %}
+<div class="message-log-container">
+    <!-- Header -->
+    <div class="glass-card mb-4">
+        <div class="flex flex-between flex-center">
+            <div>
+                <a href="{% url 'mattermost:dashboard' %}" class="glass-button mb-3" style="text-decoration: none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    Назад к панели
+                </a>
+                
+                <h1 class="text-light mb-2">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 10px;">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    Журнал сообщений
+                </h1>
+                <p class="text-muted">Всего сообщений: {{ total_count }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="glass-card mb-4">
+        <form method="get" class="filters-form">
+            <div class="filters" style="margin-bottom: 0;">
+                <div style="flex: 2;">
+                    <label class="text-light mb-2" style="display: block; font-size: 0.875rem;">Поиск</label>
+                    <input type="text" name="search" value="{{ search_query }}" class="glass-input" placeholder="Поиск по тексту или каналу...">
+                </div>
+                
+                <div style="flex: 1;">
+                    <label class="text-light mb-2" style="display: block; font-size: 0.875rem;">Канал</label>
+                    <select name="channel" class="glass-input">
+                        <option value="">Все каналы</option>
+                        {% for ch in channels %}
+                        <option value="{{ ch }}" {% if ch == current_channel %}selected{% endif %}>{{ ch }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div style="flex: 1;">
+                    <label class="text-light mb-2" style="display: block; font-size: 0.875rem;">Статус</label>
+                    <select name="success" class="glass-input">
+                        <option value="">Все</option>
+                        <option value="true" {% if current_success == 'true' %}selected{% endif %}>✅ Успешные</option>
+                        <option value="false" {% if current_success == 'false' %}selected{% endif %}>❌ Ошибки</option>
+                    </select>
+                </div>
+                
+                <div style="align-self: flex-end;">
+                    <button type="submit" class="glass-button primary" style="height: 100%;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        Фильтр
+                    </button>
+                </div>
+                
+                {% if search_query or current_channel or current_success %}
+                <div style="align-self: flex-end;">
+                    <a href="{% url 'mattermost:log' %}" class="glass-button" style="height: 100%;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="1 4 1 10 7 10"></polyline>
+                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                        </svg>
+                        Сброс
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Messages Table -->
+    <div class="glass-card">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Статус</th>
+                        <th style="width: 150px;">Канал</th>
+                        <th>Сообщение</th>
+                        <th style="width: 150px;">Время</th>
+                        <th style="width: 100px;">Время ответа</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for msg in page_obj %}
+                    <tr>
+                        <td>
+                            {% if msg.success %}
+                                <span class="badge badge-success" title="Успешно">✅</span>
+                            {% else %}
+                                <span class="badge badge-danger" title="Ошибка">❌</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <code style="color: var(--secondary-color); font-size: 0.875rem;">{{ msg.channel }}</code>
+                        </td>
+                        <td>
+                            <div style="max-width: 600px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ msg.message }}">
+                                {{ msg.get_truncated_message }}
+                            </div>
+                            {% if msg.response_data %}
+                                <small class="text-muted" style="display: block; margin-top: 0.25rem; font-size: 0.75rem; opacity: 0.7;">
+                                    Ответ: {{ msg.response_data|truncatechars:100 }}
+                                </small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="font-weight: 500;">{{ msg.sent_at|date:"d.m.Y" }}</div>
+                            <small class="text-muted">{{ msg.sent_at|time:"H:i" }}</small>
+                        </td>
+                        <td>
+                            {% if msg.response_time_ms %}
+                                <span style="color: {% if msg.response_time_ms < 500 %}var(--success-color){% elif msg.response_time_ms < 1000 %}var(--warning-color){% else %}var(--danger-color){% endif %};">
+                                    {{ msg.get_response_time_display }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center" style="padding: 3rem;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity: 0.5; margin-bottom: 1rem;">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            <p class="text-muted">Сообщения не найдены</p>
+                            {% if search_query or current_channel or current_success %}
+                                <a href="{% url 'mattermost:log' %}" class="glass-button" style="margin-top: 1rem;">
+                                    Сбросить фильтры
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination mt-4">
+            {% if page_obj.has_previous %}
+                <a href="?page=1{% if current_channel %}&channel={{ current_channel }}{% endif %}{% if current_success %}&success={{ current_success }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" class="page-link" title="Первая страница">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="11 17 6 12 11 7"></polyline>
+                        <polyline points="18 17 13 12 18 7"></polyline>
+                    </svg>
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if current_channel %}&channel={{ current_channel }}{% endif %}{% if current_success %}&success={{ current_success }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" class="page-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </a>
+            {% endif %}
+
+            <span class="page-link active" style="cursor: default;">
+                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if current_channel %}&channel={{ current_channel }}{% endif %}{% if current_success %}&success={{ current_success }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" class="page-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if current_channel %}&channel={{ current_channel }}{% endif %}{% if current_success %}&success={{ current_success }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" class="page-link" title="Последняя страница">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="13 17 18 12 13 7"></polyline>
+                        <polyline points="6 17 11 12 6 7"></polyline>
+                    </svg>
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

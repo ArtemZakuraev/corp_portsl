@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ news_item.title }} - Новости{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <article class="news-detail">
+        {% if news_item.image %}
+            <img src="{{ news_item.image.url }}" alt="{{ news_item.title }}"
+                 style="width: 100%; max-height: 400px; object-fit: cover; border-radius: var(--radius-lg); margin-bottom: var(--spacing-lg);">
+        {% endif %}
+
+        <div class="flex flex-between flex-center mb-3">
+            {% if news_item.category %}
+                <span class="badge badge-primary" style="background: {{ news_item.category.color }};">
+                    {{ news_item.category.name }}
+                </span>
+            {% endif %}
+            <div class="text-muted" style="font-size: 0.875rem;">
+                <span>👁️ {{ news_item.views }}</span>
+                <span style="margin-left: var(--spacing-md);">📅 {{ news_item.published_at|date:"d.m.Y H:i" }}</span>
+            </div>
+        </div>
+
+        <h1 style="margin-bottom: var(--spacing-md);">{{ news_item.title }}</h1>
+
+        <div class="author-info mb-4" style="display: flex; align-items: center; gap: var(--spacing-md);">
+            {% if news_item.author.employee_profile.avatar %}
+                <img src="{{ news_item.author.employee_profile.avatar.url }}" 
+                     alt="{{ news_item.author.get_full_name }}" 
+                     class="avatar">
+            {% else %}
+                <div class="avatar" style="background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white;">
+                    {{ news_item.author.first_name|first }}{{ news_item.author.last_name|first }}
+                </div>
+            {% endif %}
+            <div>
+                <strong>{{ news_item.author.get_full_name }}</strong>
+                <p class="text-muted" style="font-size: 0.75rem; margin: 0;">Автор</p>
+            </div>
+        </div>
+
+        <div class="news-content" style="line-height: 1.8; font-size: 1.05rem;">
+            {{ news_item.content|linebreaks }}
+        </div>
+
+        {% if news_item.updated_at != news_item.created_at %}
+            <p class="text-muted" style="font-size: 0.75rem; margin-top: var(--spacing-lg);">
+                Обновлено: {{ news_item.updated_at|date:"d.m.Y H:i" }}
+            </p>
+        {% endif %}
+    </article>
+
+    <!-- Related News -->
+    {% if related_news %}
+    <div class="mt-4">
+        <h3 style="margin-bottom: var(--spacing-md);">Читайте также</h3>
+        <div class="grid grid-3">
+            {% for related in related_news %}
+            <a href="{% url 'news:detail' related.pk %}" class="glass-card" style="display: block; text-decoration: none; color: inherit;">
+                <h4 style="margin-bottom: var(--spacing-sm); font-size: 1rem;">{{ related.title }}</h4>
+                <p class="text-muted" style="font-size: 0.875rem;">{{ related.excerpt|truncatewords:10 }}</p>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{% url 'news:list' %}" class="glass-button">← Все новости</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mattermost Интеграция - Панель управления{% endblock %}
+
+{% block content %}
+<div class="mattermost-dashboard">
+    <!-- Header -->
+    <div class="dashboard-header glass-card mb-4">
+        <div class="flex flex-between flex-center">
+            <div>
+                <h1 class="text-light mb-1">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 10px;">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Mattermost Интеграция
+                </h1>
+                <p class="text-muted">Управление сообщениями и мониторинг интеграции</p>
+            </div>
+            <div class="flex gap-2">
+                <button id="testConnectionBtn" class="glass-button primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    Тест соединения
+                </button>
+                <a href="{% url 'mattermost:send' %}" class="glass-button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="19" x2="12" y2="5"></line>
+                        <polyline points="5 12 12 5 19 12"></polyline>
+                    </svg>
+                    Отправить сообщение
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card">
+            <div class="stat-value">{{ total_messages }}</div>
+            <div class="stat-label">Всего сообщений</div>
+        </div>
+        <div class="stat-card" style="background: rgba(16, 185, 129, 0.2);">
+            <div class="stat-value" style="color: #10b981;">{{ successful_messages }}</div>
+            <div class="stat-label">Успешных</div>
+        </div>
+        <div class="stat-card" style="background: rgba(239, 68, 68, 0.2);">
+            <div class="stat-value" style="color: #ef4444;">{{ failed_messages }}</div>
+            <div class="stat-label">Ошибок</div>
+        </div>
+        <div class="stat-card" style="background: rgba(79, 70, 229, 0.2);">
+            <div class="stat-value" style="color: #4f46e5;">{{ success_rate }}%</div>
+            <div class="stat-label">Успешность</div>
+        </div>
+    </div>
+
+    <!-- Configuration Info -->
+    <div class="glass-card mb-4">
+        <h3 class="text-light mb-3">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            Конфигурация
+        </h3>
+        <div class="grid grid-3 gap-3">
+            <div class="glass-card" style="background: var(--glass-bg-dark);">
+                <div class="text-muted mb-1">Канал по умолчанию</div>
+                <div class="text-light" style="font-size: 1.25rem; font-weight: 600;">{{ config.default_channel }}</div>
+            </div>
+            <div class="glass-card" style="background: var(--glass-bg-dark);">
+                <div class="text-muted mb-1">Канал новостей</div>
+                <div class="text-light" style="font-size: 1.25rem; font-weight: 600;">{{ config.news_channel }}</div>
+            </div>
+            <div class="glass-card" style="background: var(--glass-bg-dark);">
+                <div class="text-muted mb-1">Канал задач</div>
+                <div class="text-light" style="font-size: 1.25rem; font-weight: 600;">{{ config.tasks_channel }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Messages -->
+    <div class="glass-card">
+        <div class="flex flex-between flex-center mb-3">
+            <h3 class="text-light m-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                Последние сообщения
+            </h3>
+            <a href="{% url 'mattermost:log' %}" class="glass-button" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                Все сообщения
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </a>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Статус</th>
+                        <th>Канал</th>
+                        <th>Сообщение</th>
+                        <th>Время</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for msg in recent_messages %}
+                    <tr>
+                        <td>
+                            {% if msg.success %}
+                                <span class="badge badge-success">✅ Успешно</span>
+                            {% else %}
+                                <span class="badge badge-danger">❌ Ошибка</span>
+                            {% endif %}
+                        </td>
+                        <td><code style="color: var(--secondary-color);">{{ msg.channel }}</code></td>
+                        <td style="max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {{ msg.get_truncated_message }}
+                        </td>
+                        <td>{{ msg.sent_at|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">Сообщений пока нет</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Connection Test Modal -->
+<div id="connectionModal" class="modal" style="display: none;">
+    <div class="glass-card" style="max-width: 500px; margin: 100px auto;">
+        <h3 class="text-light mb-3">Тестирование соединения</h3>
+        <div id="testResult" class="mb-3"></div>
+        <div class="flex gap-2" style="justify-content: flex-end;">
+            <button onclick="closeModal()" class="glass-button">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 2000;
+}
+</style>
+
+<script>
+// Test connection functionality
+document.getElementById('testConnectionBtn').addEventListener('click', async function() {
+    const modal = document.getElementById('connectionModal');
+    const resultDiv = document.getElementById('testResult');
+    
+    modal.style.display = 'block';
+    resultDiv.innerHTML = '<div class="spinner"></div><p class="text-light">Тестирование...</p>';
+    
+    try {
+        const response = await fetch('{% url "mattermost:test" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <strong>✅ Соединение успешно!</strong><br>
+                    Время ответа: ${data.response_time_ms.toFixed(2)} мс
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-error">
+                    <strong>❌ Ошибка соединения</strong><br>
+                    ${data.error || 'Неизвестная ошибка'}
+                </div>
+            `;
+        }
+    } catch (error) {
+        resultDiv.innerHTML = `
+            <div class="alert alert-error">
+                <strong>❌ Ошибка</strong><br>
+                ${error.message}
+            </div>
+        `;
+    }
+});
+
+function closeModal() {
+    document.getElementById('connectionModal').style.display = 'none';
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}
