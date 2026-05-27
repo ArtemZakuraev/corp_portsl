@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Настройки системы{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Настройки системы</h1>
+    <p class="text-muted">Управление конфигурацией корпоративного портала</p>
+</div>
+
+<div class="row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+    <!-- General Settings -->
+    <div class="card glass-card">
+        <div class="card-header">
+            <h3>Общие настройки</h3>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="site_url">URL сайта</label>
+                    <input type="url" id="site_url" name="site_url" value="{{ site_url }}" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="debug_mode" {% if debug_mode %}checked{% endif %}>
+                        Режим отладки (DEBUG)
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Сохранить</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Email Settings -->
+    <div class="card glass-card">
+        <div class="card-header">
+            <h3>Настройки почты</h3>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label for="email_host">SMTP сервер</label>
+                <input type="text" id="email_host" value="{{ email_host }}" class="form-control" readonly>
+                <small class="text-muted">Настраивается через переменные окружения</small>
+            </div>
+            
+            <a href="{% url 'admin:index' %}" class="btn btn-outline" style="margin-top: 1rem;">
+                Управление в админке
+            </a>
+        </div>
+    </div>
+    
+    <!-- Mattermost Integration -->
+    <div class="card glass-card">
+        <div class="card-header">
+            <h3>Интеграция с Mattermost</h3>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label for="mattermost_url">URL Mattermost</label>
+                <input type="text" id="mattermost_url" value="{{ mattermost_url }}" class="form-control" readonly>
+            </div>
+            
+            <a href="{% url 'mattermost:dashboard' %}" class="btn btn-primary" style="margin-top: 1rem;">
+                Перейти к Mattermost
+            </a>
+        </div>
+    </div>
+    
+    <!-- OnlyOffice Integration -->
+    <div class="card glass-card">
+        <div class="card-header">
+            <h3>Интеграция с OnlyOffice</h3>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label for="onlyoffice_url">URL OnlyOffice</label>
+                <input type="text" id="onlyoffice_url" value="{{ onlyoffice_url }}" class="form-control" readonly>
+            </div>
+            
+            <small class="text-muted">Настройки OnlyOffice управляются через docker-compose.yml</small>
+        </div>
+    </div>
+</div>
+
+<!-- System Information -->
+<div class="card glass-card" style="margin-top: 2rem;">
+    <div class="card-header">
+        <h3>Информация о системе</h3>
+    </div>
+    <div class="card-body">
+        <table class="table" style="width: 100%; border-collapse: collapse;">
+            <tbody>
+                <tr style="border-bottom: 1px solid var(--glass-border);">
+                    <td style="padding: 0.75rem; font-weight: 600;">Версия Django</td>
+                    <td style="padding: 0.75rem;">5.0.14</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--glass-border);">
+                    <td style="padding: 0.75rem; font-weight: 600;">Версия Python</td>
+                    <td style="padding: 0.75rem;">3.11.15</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--glass-border);">
+                    <td style="padding: 0.75rem; font-weight: 600;">База данных</td>
+                    <td style="padding: 0.75rem;">PostgreSQL 16</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; font-weight: 600;">Режим работы</td>
+                    <td style="padding: 0.75rem;">
+                        {% if debug_mode %}
+                            <span style="color: var(--success-color);">Разработка (DEBUG)</span>
+                        {% else %}
+                            <span style="color: var(--primary-color);">Production</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

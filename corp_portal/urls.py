@@ -27,6 +27,7 @@ urlpatterns = [
     path('wiki/', include('wiki.urls')),
     path('meetings/', include('meetings.urls')),
     path('mattermost/', include('mattermost_integration.urls')),
+    path('settings/', include('settings.urls')),
 ]
 
 # Serve media files in development
