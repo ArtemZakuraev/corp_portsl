@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ department.name|default:"Структура отделов" }} - Корпоративный портал{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <h3>🏢 {% if department %}{{ department.name }}{% else %}Структура отделов{% endif %}</h3>
+    
+    {% if department %}
+        <p class="text-muted">{{ department.description|default:"Описание отсутствует" }}</p>
+        
+        {% if department.parent %}
+            <div class="mb-3">
+                <a href="{% url 'employees:department_detail' department.parent.pk %}" class="glass-button">
+                    ← {{ department.parent.name }}
+                </a>
+            </div>
+        {% endif %}
+        
+        <div class="grid grid-2 mt-4">
+            <div>
+                <h4>Подразделения</h4>
+                <ul class="list-unstyled">
+                    {% for child in department.children.all %}
+                        <li class="mb-2">
+                            <a href="{% url 'employees:department_detail' child.pk %}">{{ child.name }}</a>
+                        </li>
+                    {% empty %}
+                        <li class="text-muted">Нет подразделений</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <div>
+                <h4>Сотрудники</h4>
+                <ul class="list-unstyled">
+                    {% for position in department.positions.all %}
+                        {% for employee in position.employees.all %}
+                            <li class="mb-2">
+                                <a href="{% url 'employees:employee_detail' employee.pk %}">
+                                    {{ employee.get_full_name }} - {{ position.name }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    {% empty %}
+                        <li class="text-muted">Нет сотрудников</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Отдел</th>
+                        <th>Описание</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dept in departments %}
+                    <tr>
+                        <td>{{ dept.name }}</td>
+                        <td>{{ dept.description|truncatewords:5|default:"—" }}</td>
+                        <td>
+                            <a href="{% url 'employees:department_detail' dept.pk %}" class="glass-button" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">
+                                Подробнее
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">Отделы не найдены</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+    
+    <div class="mt-4">
+        <a href="{% url 'employees:dashboard' %}" class="glass-button">
+            ← На главную
+        </a>
+    </div>
+</div>
+{% endblock %}

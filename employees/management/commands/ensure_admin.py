@@ -1,10 +1,11 @@
 import os
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
+from employees.models import Employee
 
 
 class Command(BaseCommand):
-    help = 'Создает или обновляет учетную запись администратора'
+    help = 'Создает или обновляет учетную запись администратора и профиль сотрудника'
 
     def handle(self, *args, **options):
         username = os.getenv('ADMIN_USERNAME', 'admin')
@@ -32,6 +33,18 @@ class Command(BaseCommand):
             user = User.objects.create_superuser(
                 username=username,
                 password=password,
-                email=email
+                email=email,
+                first_name='Admin',
+                last_name='User'
             )
             self.stdout.write(self.style.SUCCESS(f'Администратор "{username}" успешно создан.'))
+        
+        # Создаем профиль сотрудника для администратора, если он не существует
+        if not hasattr(user, 'employee_profile'):
+            Employee.objects.create(
+                user=user,
+                is_active=True
+            )
+            self.stdout.write(self.style.SUCCESS(f'Профиль сотрудника для администратора "{username}" создан.'))
+        else:
+            self.stdout.write(self.style.SUCCESS(f'Профиль сотрудника для администратора "{username}" уже существует.'))
