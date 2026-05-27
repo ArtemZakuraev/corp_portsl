@@ -1,22 +1,18 @@
-"""Mattermost Integration app URLs - Modern interface."""
+"""Mattermost Integration app URLs - Telegram-style chat interface."""
 from django.urls import path
 from . import views
 
-app_name = 'mattermost'
+app_name = 'mattermost_integration'
 
 urlpatterns = [
-    # Dashboard - main interface
-    path('', views.dashboard, name='dashboard'),
+    # Main chat interface (Telegram-style)
+    path('', views.chat_view, name='chat'),
     
-    # Send message interface
-    path('send/', views.send_message, name='send'),
-    
-    # Message log with filtering
-    path('log/', views.message_log, name='log'),
+    # API endpoints
+    path('api/channels/', views.api_get_channels, name='api_get_channels'),
+    path('api/messages/', views.api_get_messages, name='api_get_messages'),
+    path('api/send/', views.api_send_message, name='api_send_message'),
     
     # Test connection
     path('test/', views.test_connection, name='test'),
-    
-    # Webhook endpoint for receiving messages from Mattermost
-    path('webhook/', views.mattermost_webhook, name='webhook'),
 ]

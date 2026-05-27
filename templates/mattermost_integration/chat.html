@@ -1,0 +1,572 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mattermost Чат{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Telegram-style chat interface */
+    .chat-container {
+        display: flex;
+        height: calc(100vh - 140px);
+        margin-top: 20px;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Sidebar - Channels list */
+    .chat-sidebar {
+        width: 280px;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        border-right: 1px solid rgba(255, 255, 255, 0.3);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        font-weight: 600;
+        font-size: 18px;
+        color: #1a73e8;
+    }
+
+    .channels-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+    }
+
+    .channel-item {
+        padding: 12px 16px;
+        margin-bottom: 4px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .channel-item:hover {
+        background: rgba(26, 115, 232, 0.1);
+    }
+
+    .channel-item.active {
+        background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+    }
+
+    .channel-icon {
+        font-size: 18px;
+    }
+
+    /* Main chat area */
+    .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(10px);
+    }
+
+    .chat-header {
+        padding: 16px 24px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .chat-title {
+        font-weight: 600;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .message {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.incoming {
+        align-self: flex-start;
+        background: white;
+        border-bottom-left-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .message.outgoing {
+        align-self: flex-end;
+        background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+        color: white;
+        border-bottom-right-radius: 4px;
+        box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+    }
+
+    .message-sender {
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        opacity: 0.8;
+    }
+
+    .message-text {
+        font-size: 14px;
+        line-height: 1.5;
+        word-wrap: break-word;
+    }
+
+    .message-time {
+        font-size: 11px;
+        margin-top: 6px;
+        opacity: 0.6;
+        text-align: right;
+    }
+
+    /* Message input area */
+    .chat-input-area {
+        padding: 16px 24px;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .chat-input {
+        flex: 1;
+        padding: 12px 20px;
+        border: 2px solid rgba(26, 115, 232, 0.2);
+        border-radius: 24px;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.2s ease;
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    .chat-input:focus {
+        border-color: #1a73e8;
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+    }
+
+    .send-button {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+        color: white;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+    }
+
+    .send-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(26, 115, 232, 0.4);
+    }
+
+    .send-button:active {
+        transform: scale(0.95);
+    }
+
+    .send-button svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Loading state */
+    .loading-messages {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 200px;
+        color: #666;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(26, 115, 232, 0.2);
+        border-top-color: #1a73e8;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Connection status */
+    .connection-status {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .status-connected {
+        background: rgba(76, 175, 80, 0.2);
+        color: #4caf50;
+    }
+
+    .status-disconnected {
+        background: rgba(244, 67, 54, 0.2);
+        color: #f44336;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .chat-sidebar {
+            width: 70px;
+        }
+
+        .channel-name {
+            display: none;
+        }
+
+        .sidebar-header {
+            font-size: 14px;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2><i class="fas fa-comments me-2"></i>Mattermost Чат</h2>
+                <button class="btn btn-outline-primary btn-sm" onclick="testConnection()">
+                    <i class="fas fa-plug me-1"></i>Проверка соединения
+                </button>
+            </div>
+
+            {% if is_personal %}
+            <div class="alert alert-info d-flex align-items-center">
+                <i class="fas fa-user-circle me-2"></i>
+                <div>Вы используете свои личные учетные данные Mattermost</div>
+            </div>
+            {% else %}
+            <div class="alert alert-warning d-flex align-items-center">
+                <i class="fas fa-robot me-2"></i>
+                <div>Вы используете системного бота. Настройте личные данные в профиле для персонализации.</div>
+            </div>
+            {% endif %}
+
+            <div class="chat-container">
+                <!-- Sidebar -->
+                <div class="chat-sidebar">
+                    <div class="sidebar-header">
+                        <i class="fas fa-hashtag me-2"></i>Каналы
+                    </div>
+                    <div class="channels-list" id="channelsList">
+                        <div class="loading-messages">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Chat -->
+                <div class="chat-main">
+                    <div class="chat-header">
+                        <div class="chat-title" id="currentChannel">
+                            <i class="fas fa-arrow-left me-2"></i>Выберите канал
+                        </div>
+                        <div class="connection-status status-disconnected" id="connectionStatus">
+                            <i class="fas fa-circle me-1"></i>Нет соединения
+                        </div>
+                    </div>
+
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="loading-messages">
+                            <div>Выберите канал для начала общения</div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-area">
+                        <input type="text" 
+                               class="chat-input" 
+                               id="messageInput" 
+                               placeholder="Введите сообщение..."
+                               onkeypress="if(event.key === 'Enter') sendMessage()">
+                        <button class="send-button" onclick="sendMessage()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const mmUrl = "{{ mm_url }}";
+    let currentChannelId = null;
+    let channels = [];
+    let messagePolling = null;
+
+    // Load channels on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadChannels();
+    });
+
+    async function loadChannels() {
+        try {
+            const response = await fetch('{% url "mattermost_integration:api_get_channels" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                channels = data.channels;
+                renderChannels();
+            } else {
+                document.getElementById('channelsList').innerHTML = `
+                    <div class="alert alert-danger m-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ${data.error || 'Ошибка загрузки каналов'}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading channels:', error);
+            document.getElementById('channelsList').innerHTML = `
+                <div class="alert alert-danger m-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Ошибка соединения с сервером
+                </div>
+            `;
+        }
+    }
+
+    function renderChannels() {
+        const container = document.getElementById('channelsList');
+        
+        if (channels.length === 0) {
+            container.innerHTML = '<div class="p-3 text-muted">Нет доступных каналов</div>';
+            return;
+        }
+
+        container.innerHTML = channels.map(channel => `
+            <div class="channel-item" onclick="selectChannel('${channel.id}', '${channel.display_name || channel.name}')">
+                <span class="channel-icon">${channel.type === 'D' ? '👤' : '#'}</span>
+                <span class="channel-name">${channel.display_name || channel.name}</span>
+            </div>
+        `).join('');
+    }
+
+    function selectChannel(channelId, channelName) {
+        // Update active state
+        document.querySelectorAll('.channel-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        event.currentTarget.classList.add('active');
+
+        currentChannelId = channelId;
+        document.getElementById('currentChannel').innerHTML = `
+            <i class="fas fa-hashtag me-2"></i>${channelName}
+        `;
+
+        // Load messages
+        loadMessages();
+
+        // Start polling for new messages
+        if (messagePolling) clearInterval(messagePolling);
+        messagePolling = setInterval(loadMessages, 5000);
+    }
+
+    async function loadMessages() {
+        if (!currentChannelId) return;
+
+        try {
+            const response = await fetch('{% url "mattermost_integration:api_get_messages" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ channel_id: currentChannelId })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                renderMessages(data.messages);
+                updateConnectionStatus(true);
+            } else {
+                updateConnectionStatus(false);
+            }
+        } catch (error) {
+            console.error('Error loading messages:', error);
+            updateConnectionStatus(false);
+        }
+    }
+
+    function renderMessages(messages) {
+        const container = document.getElementById('chatMessages');
+        
+        if (messages.length === 0) {
+            container.innerHTML = '<div class="text-center text-muted mt-5">Нет сообщений</div>';
+            return;
+        }
+
+        container.innerHTML = messages.map(msg => {
+            const isOutgoing = msg.user_id === '{{ request.user.id }}';
+            const time = new Date(msg.create_at).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+            
+            return `
+                <div class="message ${isOutgoing ? 'outgoing' : 'incoming'}">
+                    ${!isOutgoing ? `<div class="message-sender">${msg.user_id}</div>` : ''}
+                    <div class="message-text">${escapeHtml(msg.message)}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+        }).join('');
+
+        // Scroll to bottom
+        container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+
+        if (!message || !currentChannelId) return;
+
+        try {
+            const response = await fetch('{% url "mattermost_integration:api_send_message" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    channel_id: currentChannelId,
+                    message: message
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                input.value = '';
+                loadMessages(); // Reload immediately
+            } else {
+                alert('Ошибка отправки: ' + (data.error || 'Неизвестная ошибка'));
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('Ошибка отправки сообщения');
+        }
+    }
+
+    function updateConnectionStatus(connected) {
+        const statusEl = document.getElementById('connectionStatus');
+        if (connected) {
+            statusEl.className = 'connection-status status-connected';
+            statusEl.innerHTML = '<i class="fas fa-circle me-1"></i>Подключено';
+        } else {
+            statusEl.className = 'connection-status status-disconnected';
+            statusEl.innerHTML = '<i class="fas fa-circle me-1"></i>Нет соединения';
+        }
+    }
+
+    async function testConnection() {
+        const btn = event.currentTarget;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Проверка...';
+
+        try {
+            const response = await fetch('{% url "mattermost_integration:test_connection" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+
+            const data = await response.json();
+            
+            let message = '📊 Результаты проверки:\n\n';
+            message += `Адрес сервера: ${data.mm_url_configured ? '✅' : '❌'}\n`;
+            message += `Webhook: ${data.webhook_configured ? '✅' : '❌'}\n`;
+            message += `Токен бота: ${data.bot_token_configured ? '✅' : '❌'}\n`;
+            message += `SSL проверка: ${data.ssl_verification ? 'вкл' : 'выкл'}\n`;
+            message += `Данные пользователя: ${data.user_credentials}\n`;
+            message += `Соединение: ${data.user_connection}\n`;
+            message += `Сервер: ${data.server_reachable}`;
+
+            alert(message);
+            updateConnectionStatus(data.user_connection.includes('✅'));
+        } catch (error) {
+            alert('Ошибка проверки соединения: ' + error);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-plug me-1"></i>Проверка соединения';
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        if (messagePolling) clearInterval(messagePolling);
+    });
+</script>
+{% endblock %}
