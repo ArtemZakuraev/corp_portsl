@@ -7,7 +7,7 @@
 <div class="glass-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="fas fa-book me-2"></i>База знаний</h2>
-        <a href="{% url 'article_create' %}" class="btn btn-primary">
+        <a href="{% url 'wiki:create' %}" class="btn btn-primary">
             <i class="fas fa-plus me-1"></i>Новая статья
         </a>
     </div>
@@ -25,9 +25,9 @@
         </div>
         <div class="col-md-4">
             <select class="form-select" onchange="location.href=this.value">
-                <option value="{% url 'article_list' %}">Все категории</option>
+                <option value="{% url 'wiki:list' %}">Все категории</option>
                 {% for category in categories %}
-                <option value="{% url 'article_list_by_category' category.slug %}" 
+                <option value="{% url 'wiki:detail' category.slug %}" 
                         {% if current_category == category %}selected{% endif %}>
                     {{ category.name }}
                 </option>
@@ -43,7 +43,7 @@
             <div class="card h-100 glass-card-sm">
                 <div class="card-body">
                     <h5 class="card-title">
-                        <a href="{% url 'article_detail' article.pk %}" class="text-decoration-none">
+                        <a href="{% url 'wiki:detail' article.pk %}" class="text-decoration-none">
                             {{ article.title }}
                         </a>
                     </h5>
@@ -67,7 +67,7 @@
                     </div>
                 </div>
                 <div class="card-footer bg-transparent border-0">
-                    <a href="{% url 'article_detail' article.pk %}" class="btn btn-sm btn-outline-primary">
+                    <a href="{% url 'wiki:detail' article.pk %}" class="btn btn-sm btn-outline-primary">
                         Читать далее <i class="fas fa-arrow-right ms-1"></i>
                     </a>
                 </div>
@@ -79,7 +79,7 @@
                 <i class="fas fa-book-reader fa-4x mb-3 d-block"></i>
                 <h4>Статей пока нет</h4>
                 <p class="mb-4">Будьте первым, кто создаст статью в базе знаний!</p>
-                <a href="{% url 'article_create' %}" class="btn btn-primary">
+                <a href="{% url 'wiki:create' %}" class="btn btn-primary">
                     <i class="fas fa-plus me-1"></i>Создать статью
                 </a>
             </div>

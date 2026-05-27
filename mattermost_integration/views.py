@@ -101,7 +101,7 @@ def chat_view(request):
     
     if not mm_url:
         messages.warning(request, 'Адрес сервера Mattermost не настроен в системных настройках')
-        return redirect('settings:system_settings')
+        return redirect('settings:mattermost_profile')
     
     creds = _get_user_mm_credentials(request.user)
     if not creds:

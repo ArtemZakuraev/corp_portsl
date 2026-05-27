@@ -9,7 +9,7 @@
     <div class="glass-card mb-4">
         <div class="flex flex-between flex-center">
             <div>
-                <a href="{% url 'mattermost:dashboard' %}" class="glass-button mb-3" style="text-decoration: none;">
+                <a href="{% url 'mattermost_integration:chat' %}" class="glass-button mb-3" style="text-decoration: none;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="15 18 9 12 15 6"></polyline>
                     </svg>
@@ -71,7 +71,7 @@
                 
                 {% if search_query or current_channel or current_success %}
                 <div style="align-self: flex-end;">
-                    <a href="{% url 'mattermost:log' %}" class="glass-button" style="height: 100%;">
+                    <a href="{% url 'mattermost_integration:chat' %}" class="glass-button" style="height: 100%;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="1 4 1 10 7 10"></polyline>
                             <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
@@ -142,7 +142,7 @@
                             </svg>
                             <p class="text-muted">Сообщения не найдены</p>
                             {% if search_query or current_channel or current_success %}
-                                <a href="{% url 'mattermost:log' %}" class="glass-button" style="margin-top: 1rem;">
+                                <a href="{% url 'mattermost_integration:chat' %}" class="glass-button" style="margin-top: 1rem;">
                                     Сбросить фильтры
                                 </a>
                             {% endif %}
