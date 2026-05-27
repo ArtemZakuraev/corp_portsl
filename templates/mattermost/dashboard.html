@@ -24,7 +24,7 @@
                     </svg>
                     Тест соединения
                 </button>
-                <a href="{% url 'mattermost:send' %}" class="glass-button">
+                <a href="{% url 'mattermost_integration:chat' %}" class="glass-button">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="12" y1="19" x2="12" y2="5"></line>
                         <polyline points="5 12 12 5 19 12"></polyline>
@@ -90,7 +90,7 @@
                 </svg>
                 Последние сообщения
             </h3>
-            <a href="{% url 'mattermost:log' %}" class="glass-button" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+            <a href="{% url 'mattermost_integration:chat' %}" class="glass-button" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
                 Все сообщения
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="9 18 15 12 9 6"></polyline>

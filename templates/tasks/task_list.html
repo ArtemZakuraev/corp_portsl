@@ -7,7 +7,7 @@
 <div class="glass-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="fas fa-tasks me-2"></i>Задачи</h2>
-        <a href="{% url 'task_create' %}" class="btn btn-primary">
+        <a href="{% url 'tasks:create' %}" class="btn btn-primary">
             <i class="fas fa-plus me-1"></i>Новая задача
         </a>
     </div>
@@ -62,7 +62,7 @@
                 <tr>
                     <td>#{{ task.id }}</td>
                     <td>
-                        <a href="{% url 'task_detail' task.pk %}">{{ task.title }}</a>
+                        <a href="{% url 'tasks:detail' task.pk %}">{{ task.title }}</a>
                         {% if task.description %}
                         <br><small class="text-muted">{{ task.description|truncatewords:10 }}</small>
                         {% endif %}
@@ -112,10 +112,10 @@
                     </td>
                     <td>
                         <div class="btn-group btn-group-sm">
-                            <a href="{% url 'task_detail' task.pk %}" class="btn btn-outline-primary">
+                            <a href="{% url 'tasks:detail' task.pk %}" class="btn btn-outline-primary">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{% url 'task_edit' task.pk %}" class="btn btn-outline-secondary">
+                            <a href="{% url 'tasks:edit' task.pk %}" class="btn btn-outline-secondary">
                                 <i class="fas fa-edit"></i>
                             </a>
                         </div>

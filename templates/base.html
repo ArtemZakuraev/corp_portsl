@@ -56,7 +56,7 @@
                 <li><a href="{% url 'tasks:list' %}" class="nav-link {% if 'tasks' in request.resolver_match.url_name %}active{% endif %}">Задачи</a></li>
                 <li><a href="{% url 'wiki:list' %}" class="nav-link {% if 'wiki' in request.resolver_match.url_name %}active{% endif %}">Wiki</a></li>
                 <li><a href="{% url 'meetings:list' %}" class="nav-link {% if 'meetings' in request.resolver_match.url_name %}active{% endif %}">Встречи</a></li>
-                <li><a href="{% url 'mattermost_integration:chat' %}" class="nav-link {% if 'mattermost_integration' in request.resolver_match.namespace %}active{% endif %}">Mattermost</a></li>
+                <li><a href="{% url 'mattermost_integration:chat' %}" class="nav-link {% if request.resolver_match.namespace == 'mattermost_integration' %}active{% endif %}">Mattermost</a></li>
                 {% if user.is_staff %}
                 <li><a href="{% url 'settings:system' %}" class="nav-link {% if 'settings' in request.resolver_match.url_name %}active{% endif %}">Настройки</a></li>
                 {% endif %}

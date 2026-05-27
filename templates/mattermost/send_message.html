@@ -7,7 +7,7 @@
 <div class="send-message-container" style="max-width: 800px; margin: 0 auto;">
     <!-- Header -->
     <div class="glass-card mb-4">
-        <a href="{% url 'mattermost:dashboard' %}" class="glass-button mb-3" style="text-decoration: none;">
+        <a href="{% url 'mattermost_integration:chat' %}" class="glass-button mb-3" style="text-decoration: none;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
@@ -76,7 +76,7 @@
                     </svg>
                     Отправить сообщение
                 </button>
-                <a href="{% url 'mattermost:dashboard' %}" class="glass-button" style="padding: 1rem 2rem;">
+                <a href="{% url 'mattermost_integration:chat' %}" class="glass-button" style="padding: 1rem 2rem;">
                     Отмена
                 </a>
             </div>
