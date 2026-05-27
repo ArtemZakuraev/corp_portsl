@@ -4,37 +4,28 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
-*.so
 
-# Django
+# Logs and temp files
 *.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# IDE
-.vscode/
-.idea/
+*.tmp
 *.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
 
 # Environment
 .env
 .env.local
-*.env.*
+.env.*
 
-# Coverage
-.coverage
-coverage/
-htmlcov/
+# Editors
+.vscode/
+.idea/
 
-# Build
+# Dependencies
+.venv/
+venv/
+node_modules/
+
+# Build artifacts
 dist/
 build/
-*.egg-info/
+target/
 ```
