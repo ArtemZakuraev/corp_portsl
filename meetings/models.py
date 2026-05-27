@@ -197,7 +197,7 @@ class MeetingParticipant(models.Model):
     
     class Meta:
         unique_together = [['meeting', 'user'], ['meeting', 'email']]
-        ordering = ['response', 'user__last_name']
+        ordering = ['response']
         verbose_name = _('Участник встречи')
         verbose_name_plural = _('Участники встреч')
         indexes = [

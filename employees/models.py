@@ -148,7 +148,6 @@ class Employee(models.Model):
         verbose_name = _('Сотрудник')
         verbose_name_plural = _('Сотрудники')
         indexes = [
-            models.Index(fields=['user__last_name', 'user__first_name']),
             models.Index(fields=['position']),
             models.Index(fields=['supervisor']),
             models.Index(fields=['is_active']),
