@@ -27,9 +27,21 @@ def dashboard(request):
     context = {
         'departments': departments,
         'recent_employees': recent_employees,
-        'total_employees': Employee.objects.filter(is_active=True).count(),
-        'total_departments': Department.objects.count(),
+        'total_employees': 0,  # Will be updated after checking table existence
+        'total_departments': 0,  # Will be updated after checking table existence
     }
+    
+    # Try to get counts, handle case where tables don't exist yet
+    try:
+        context['total_employees'] = Employee.objects.filter(is_active=True).count()
+    except Exception:
+        context['total_employees'] = 0
+        
+    try:
+        context['total_departments'] = Department.objects.count()
+    except Exception:
+        context['total_departments'] = 0
+    
     return render(request, 'employees/dashboard.html', context)
 
 
