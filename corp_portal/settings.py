@@ -70,19 +70,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'corp_portal.wsgi.application'
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'corp_portal'),
-        'USER': os.getenv('POSTGRES_USER', 'corp_portal'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'corp_portal'),
-        'HOST': os.getenv('POSTGRES_HOST', 'db'),
-        'PORT': os.getenv('POSTGRES_PORT', '5432'),
-        'CONN_MAX_AGE': 600,  # Persistent connections for performance
-        'CONN_HEALTH_CHECKS': True,  # Health checks for stale connections
+# Database - support both PostgreSQL and SQLite for development/testing
+if os.getenv('DATABASE_URL', '').startswith('sqlite'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('POSTGRES_DB', 'corp_portal'),
+            'USER': os.getenv('POSTGRES_USER', 'corp_portal'),
+            'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'corp_portal'),
+            'HOST': os.getenv('POSTGRES_HOST', 'db'),
+            'PORT': os.getenv('POSTGRES_PORT', '5432'),
+            'CONN_MAX_AGE': 600,  # Persistent connections for performance
+            'CONN_HEALTH_CHECKS': True,  # Health checks for stale connections
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
