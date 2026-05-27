@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Мой профиль Mattermost{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>💬 Профиль Mattermost</h1>
+    <p class="text-muted">Настройки интеграции с Mattermost для вашей учетной записи</p>
+</div>
+
+<div class="row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-top: 2rem;">
+    <!-- Profile Form -->
+    <div class="card glass-card">
+        <div class="card-header">
+            <h3>Настройки подключения</h3>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="mm_username">Имя пользователя Mattermost</label>
+                    <input type="text" id="mm_username" name="mm_username" value="{{ profile.mm_username }}" class="form-control" placeholder="username">
+                    <small class="text-muted">Ваше имя пользователя в Mattermost</small>
+                </div>
+                
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="mm_password">Пароль Mattermost</label>
+                    <input type="password" id="mm_password" name="mm_password" value="" class="form-control" placeholder="••••••••" autocomplete="off">
+                    <small class="text-muted">Укажите пароль или используйте токен доступа</small>
+                </div>
+                
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="mm_token">Токен доступа (Personal Access Token)</label>
+                    <input type="password" id="mm_token" name="mm_token" value="{{ profile.mm_token }}" class="form-control" placeholder="••••••••" autocomplete="off">
+                    <small class="text-muted">Альтернатива паролю. Создаётся в настройках Mattermost</small>
+                </div>
+                
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" name="is_active" id="is_active" {% if profile.is_active %}checked{% endif %}>
+                        <span>Активировать интеграцию</span>
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem; width: 100%;">
+                    💾 Сохранить настройки
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Connection Test & Status -->
+    <div class="card glass-card">
+        <div class="card-header">
+            <h3>Статус подключения</h3>
+        </div>
+        <div class="card-body">
+            <div id="connection-status" style="padding: 1.5rem; text-align: center;">
+                {% if has_credentials %}
+                    <div style="color: var(--success-color); font-size: 3rem; margin-bottom: 1rem;">🟢</div>
+                    <p><strong>Настроено</strong></p>
+                    <p class="text-muted">Учётные данные сохранены</p>
+                    <button onclick="testConnection()" class="btn btn-outline" style="margin-top: 1rem;">
+                        🔌 Проверить подключение
+                    </button>
+                {% else %}
+                    <div style="color: var(--warning-color); font-size: 3rem; margin-bottom: 1rem;">🟡</div>
+                    <p><strong>Не настроено</strong></p>
+                    <p class="text-muted">Укажите имя пользователя и пароль/токен</p>
+                {% endif %}
+            </div>
+            
+            <div id="test-result" style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,0,0,0.1); border-radius: 8px; display: none;">
+                <h4 style="margin-bottom: 0.5rem;">Результат проверки:</h4>
+                <p id="test-message"></p>
+            </div>
+            
+            <div style="margin-top: 2rem; padding: 1rem; background: rgba(79, 70, 229, 0.1); border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                <h4 style="margin-bottom: 0.5rem;">ℹ️ Как получить токен?</h4>
+                <ol style="margin: 0; padding-left: 1.5rem; font-size: 0.9rem;">
+                    <li>Откройте Mattermost</li>
+                    <li>Перейдите в меню → Настройки</li>
+                    <li>Выберите "Personal Access Tokens"</li>
+                    <li>Создайте новый токен</li>
+                    <li>Скопируйте и вставьте в поле выше</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Sessions Info -->
+<div class="card glass-card" style="margin-top: 2rem; max-width: 800px;">
+    <div class="card-header">
+        <h3>🔐 Ваши сессии Mattermost</h3>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">
+            После входа в корпоративный портал, ваша сессия Mattermost используется автоматически 
+            для получения персонализированных уведомлений и сообщений, видимых только вам.
+        </p>
+        <ul style="margin-top: 1rem;">
+            <li>✅ Уведомления о задачах приходят в личные сообщения</li>
+            <li>✅ Новости компании отображаются с учётом ваших подписок</li>
+            <li>✅ Напоминания о встречах отправляются персонально</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function testConnection() {
+    const statusDiv = document.getElementById('connection-status');
+    const resultDiv = document.getElementById('test-result');
+    const messageEl = document.getElementById('test-message');
+    
+    statusDiv.innerHTML = '<div style="font-size: 2rem;">⏳</div><p>Проверка подключения...</p>';
+    resultDiv.style.display = 'none';
+    
+    fetch('{% url "settings:mattermost_test" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        resultDiv.style.display = 'block';
+        
+        if (data.success) {
+            statusDiv.innerHTML = '<div style="color: var(--success-color); font-size: 3rem; margin-bottom: 1rem;">✅</div>' +
+                '<p><strong>Подключение успешно!</strong></p>' +
+                `<p class="text-muted">Пользователь: ${data.mm_username}</p>` +
+                '<button onclick="testConnection()" class="btn btn-outline" style="margin-top: 1rem;">🔄 Проверить снова</button>';
+            messageEl.innerHTML = `<span style="color: var(--success-color);">${data.message || 'Соединение установлено'}</span>`;
+        } else {
+            statusDiv.innerHTML = '<div style="color: var(--error-color); font-size: 3rem; margin-bottom: 1rem;">❌</div>' +
+                '<p><strong>Ошибка подключения</strong></p>' +
+                `<p class="text-muted">${data.error}</p>` +
+                '<button onclick="testConnection()" class="btn btn-outline" style="margin-top: 1rem;">🔄 Проверить снова</button>';
+            messageEl.innerHTML = `<span style="color: var(--error-color);">${data.error}</span>`;
+        }
+    })
+    .catch(error => {
+        statusDiv.innerHTML = '<div style="color: var(--error-color); font-size: 3rem; margin-bottom: 1rem;">❌</div>' +
+            '<p><strong>Ошибка</strong></p>' +
+            '<p class="text-muted">Не удалось выполнить запрос</p>';
+        messageEl.innerHTML = `<span style="color: var(--error-color);">Ошибка: ${error}</span>`;
+        resultDiv.style.display = 'block';
+    });
+}
+</script>
+{% endblock %}
