@@ -32,7 +32,7 @@
             </div>
             <div class="flex flex-between mb-2" style="padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--glass-border);">
                 <span class="text-muted">Руководитель:</span>
-                {% if employee.supervisor %}
+                {% if employee.supervisor and employee.supervisor.pk %}
                     <a href="{% url 'employees:employee_detail' employee.supervisor.pk %}">{{ employee.supervisor.get_full_name }}</a>
                 {% else %}
                     <span class="text-muted">—</span>

@@ -40,7 +40,7 @@
             
             <div class="user-menu">
                 <button class="glass-button">
-                    {% if user.employee_profile.avatar %}
+                    {% if user.employee_profile and user.employee_profile.avatar %}
                         <img src="{{ user.employee_profile.avatar.url }}" alt="{{ user.get_full_name }}" class="avatar">
                     {% else %}
                         <div class="avatar" style="background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white;">
@@ -54,7 +54,9 @@
                 </button>
                 
                 <div class="user-dropdown">
+                    {% if user.employee_profile and user.employee_profile.pk %}
                     <a href="{% url 'employees:employee_detail' user.employee_profile.pk %}" class="dropdown-item">Профиль</a>
+                    {% endif %}
                     <a href="{% url 'admin:index' %}" class="dropdown-item">Админка</a>
                     <hr style="border: none; border-top: 1px solid var(--glass-border); margin: 0.5rem 0;">
                     <a href="{% url 'logout' %}" class="dropdown-item">Выйти</a>
