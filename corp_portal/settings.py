@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'wiki',
     'meetings',
     'mattermost_integration',
+    'settings',
 ]
 
 MIDDLEWARE = [
