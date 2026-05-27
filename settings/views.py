@@ -22,6 +22,7 @@ def system_settings(request):
     mattermost_verify_ssl = SystemSetting.get_value('mattermost_verify_ssl', 'True') == 'True'
     onlyoffice_url = SystemSetting.get_value('onlyoffice_url', getattr(django_settings, 'ONLYOFFICE_URL', 'http://onlyoffice:80'))
     debug_mode = SystemSetting.get_value('debug_mode', str(django_settings.DEBUG)) == 'True'
+    background_image_url = SystemSetting.get_value('background_image_url', '')
     
     if request.method == 'POST':
         try:
@@ -34,6 +35,7 @@ def system_settings(request):
             SystemSetting.set_value('mattermost_verify_ssl', 'on' in data.get('mattermost_verify_ssl', ''), 'Проверка SSL сертификата Mattermost', request.user)
             SystemSetting.set_value('onlyoffice_url', data.get('onlyoffice_url', ''), 'URL OnlyOffice', request.user)
             SystemSetting.set_value('debug_mode', 'on' in data.get('debug_mode', ''), 'Режим отладки', request.user)
+            SystemSetting.set_value('background_image_url', data.get('background_image_url', ''), 'URL фонового изображения', request.user)
             
             messages.success(request, 'Настройки системы успешно сохранены!')
         except Exception as e:
@@ -48,6 +50,7 @@ def system_settings(request):
         'mattermost_verify_ssl': mattermost_verify_ssl,
         'onlyoffice_url': onlyoffice_url,
         'debug_mode': debug_mode,
+        'background_image_url': background_image_url,
     }
     
     return render(request, 'settings/system_settings.html', context)

@@ -41,16 +41,20 @@
                 <h3>💬 Интеграция с Mattermost</h3>
             </div>
             <div class="card-body">
-                <div class="form-group">
+                <div class="form-group" style="margin-top: 1rem;">
                     <label for="mattermost_api_url">Mattermost API URL</label>
-                    <input type="url" id="mattermost_api_url" name="mattermost_api_url" value="{{ mattermost_api_url }}" class="form-control" placeholder="https://mattermost.company.com">
-                    <small class="text-muted">Адрес сервера Mattermost для API вызовов</small>
+                    <input type="url" id="mattermost_api_url" name="mattermost_api_url" value="{{ mattermost_api_url }}" class="form-control" placeholder="https://mattermost.company.com" oninput="autoFillWebhook()">
+                    <small class="text-muted">Адрес сервера Mattermost для API вызовов. Webhook заполнится автоматически.</small>
                 </div>
                 
                 <div class="form-group" style="margin-top: 1rem;">
                     <label for="mattermost_url">Mattermost Webhook URL</label>
                     <input type="url" id="mattermost_url" name="mattermost_url" value="{{ mattermost_url }}" class="form-control" placeholder="https://mattermost.company.com/hooks/xxx">
-                    <small class="text-muted">URL входящего вебхука для отправки уведомлений</small>
+                    <small class="text-muted">
+                        🔗 URL входящего вебхука для отправки уведомлений. 
+                        <span style="color: var(--primary-color);">Заполняется автоматически при вводе API URL</span>.
+                        Если нужно, измените вручную на конкретный хук (например: https://mattermost.company.com/hooks/abcd1234).
+                    </small>
                 </div>
                 
                 <div class="form-group" style="margin-top: 1rem;">
@@ -102,6 +106,27 @@
                 </a>
             </div>
         </div>
+        
+        <!-- Appearance Settings -->
+        <div class="card glass-card">
+            <div class="card-header">
+                <h3>🎨 Внешний вид</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="background_image_url">URL фонового изображения</label>
+                    <input type="url" id="background_image_url" name="background_image_url" value="{{ background_image_url }}" class="form-control" placeholder="https://example.com/background.jpg">
+                    <small class="text-muted">Изображение будет отображаться на заднем плане с эффектом матового стекла</small>
+                </div>
+                
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                    <small class="text-muted">
+                        💡 <strong>Совет:</strong> Используйте изображения с высоким разрешением и нейтральными цветами для лучшей читаемости текста.
+                        Изображение автоматически затемняется и размывается для создания эффекта glassmorphism.
+                    </small>
+                </div>
+            </div>
+        </div>
     </div>
     
     <div style="margin-top: 2rem; text-align: right;">
@@ -145,4 +170,35 @@
         </table>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Автоматическое заполнение Webhook URL при вводе Mattermost API URL
+function autoFillWebhook() {
+    const apiUrlInput = document.getElementById('mattermost_api_url');
+    const webhookInput = document.getElementById('mattermost_url');
+    
+    if (!apiUrlInput || !webhookInput) return;
+    
+    const apiUrl = apiUrlInput.value.trim();
+    
+    // Если поле вебхука пустое или содержит базовый URL (без /hooks/), заполняем его
+    if (apiUrl && (!webhookInput.value.trim() || !webhookInput.value.includes('/hooks/'))) {
+        // Удаляем trailing slash и добавляем /hooks/xxxxx
+        const baseUrl = apiUrl.replace(/\/$/, '');
+        webhookInput.value = baseUrl + '/hooks/';
+        webhookInput.placeholder = baseUrl + '/hooks/xxxxx';
+        
+        // Визуально показываем, что поле заполнено автоматически
+        webhookInput.style.borderColor = 'var(--primary-color)';
+        webhookInput.style.backgroundColor = 'rgba(108, 92, 231, 0.05)';
+    }
+}
+
+// При загрузке страницы тоже проверяем
+document.addEventListener('DOMContentLoaded', function() {
+    autoFillWebhook();
+});
+</script>
 {% endblock %}
