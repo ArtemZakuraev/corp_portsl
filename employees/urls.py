@@ -11,4 +11,5 @@ urlpatterns = [
     path('api/org-chart/', views.organization_chart, name='organization_chart'),
     path('departments/', views.department_structure, name='department_structure'),
     path('departments/<int:pk>/', views.department_structure, name='department_detail'),
+    path('profile/', views.profile, name='profile'),
 ]

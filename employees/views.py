@@ -150,6 +150,13 @@ def department_structure(request, pk=None):
     return render(request, 'employees/department_structure.html', context)
 
 
+@login_required
+def profile(request):
+    """User profile view for Mattermost settings."""
+    # Redirect to the dedicated Mattermost profile page
+    return redirect('mattermost_integration:profile')
+
+
 def error_404(request, exception):
     """Custom 404 error handler."""
     return render(request, 'errors/404.html', status=404)
