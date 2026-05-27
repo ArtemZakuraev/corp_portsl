@@ -77,48 +77,37 @@ echo "=========================================="
 echo "Применение миграций базы данных..."
 echo "=========================================="
 
-# Применяем миграции с несколькими попытками
-max_migrate_attempts=3
-migrate_attempt=0
-migration_success=false
-
-while [ $migrate_attempt -lt $max_migrate_attempts ]; do
-    migrate_attempt=$((migrate_attempt + 1))
-    echo "Попытка применения миграций: $migrate_attempt/$max_migrate_attempts"
-    
-    if python manage.py migrate --noinput --verbosity=1; then
-        echo "✓ Миграции успешно применены!"
-        migration_success=true
-        break
-    else
-        echo "⚠ Попытка $migrate_attempt не удалась, повторная попытка через 2 секунды..."
-        sleep 2
-    fi
-done
-
-if [ "$migration_success" = false ]; then
-    echo "✗ ОШИБКА: Не удалось применить миграции после $max_migrate_attempts попыток!"
-    echo "Проверьте логи выше для деталей."
-    exit 1
-fi
-
-# Проверяем, что нет непримененных миграций
+# Проверяем, есть ли непримененные миграции, и применяем их
 echo "Проверка наличия непримененных миграций..."
-unapplied=$(python manage.py showmigrations --list 2>/dev/null | grep -c "\[ \]" || echo "0")
+if python manage.py showmigrations --list 2>/dev/null | grep -q "\[ \]"; then
+    echo "Обнаружены непримененные миграции. Применяем..."
+    
+    # Применяем миграции с несколькими попытками
+    max_migrate_attempts=3
+    migrate_attempt=0
+    migration_success=false
 
-if [ "$unapplied" -gt 0 ]; then
-    echo "⚠ ВНИМАНИЕ: Обнаружены $unapplied непримененных миграций!"
-    echo "Список непримененных миграций:"
-    python manage.py showmigrations --list | grep "\[ \]"
-    echo "Попытка применить оставшиеся миграции..."
-    python manage.py migrate --noinput --verbosity=1
-    if [ $? -eq 0 ]; then
-        echo "✓ Все оставшиеся миграции применены!"
-    else
-        echo "⚠ Не удалось применить некоторые миграции, но продолжаем запуск..."
+    while [ $migrate_attempt -lt $max_migrate_attempts ]; do
+        migrate_attempt=$((migrate_attempt + 1))
+        echo "Попытка применения миграций: $migrate_attempt/$max_migrate_attempts"
+        
+        if python manage.py migrate --noinput --verbosity=1; then
+            echo "✓ Миграции успешно применены!"
+            migration_success=true
+            break
+        else
+            echo "⚠ Попытка $migrate_attempt не удалась, повторная попытка через 2 секунды..."
+            sleep 2
+        fi
+    done
+
+    if [ "$migration_success" = false ]; then
+        echo "✗ ОШИБКА: Не удалось применить миграции после $max_migrate_attempts попыток!"
+        echo "Проверьте логи выше для деталей."
+        exit 1
     fi
 else
-    echo "✓ Все миграции применены!"
+    echo "✓ Все миграции уже применены или миграции отсутствуют."
 fi
 
 # Создаем администратора (если нужно)

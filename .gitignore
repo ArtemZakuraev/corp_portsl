@@ -4,13 +4,46 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.py~
+*.py.class
+*.py.backup
+*.swp
+*.swo
 
-# Logs and temp files
-*.log
-*.tmp
+# Django
+*.sqlite3
+*.sqlite3-journal
+media/
+staticfiles/
 
-# Environment
+# Dependencies
+.venv/
+venv/
+env/
+ENV/
 .env
-.env.local
 .env.*
+.env.local
+.venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Migrations
+*/migrations/
+
+# Logs
+*.log
+*.out
+*.pid
+*.seed
+*.session
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 ```
