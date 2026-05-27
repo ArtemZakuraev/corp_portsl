@@ -1,9 +1,23 @@
 #!/bin/bash
 set -e
 
+# Определяем тип базы данных из переменных окружения
+DB_ENGINE="${DATABASE_URL:-}"
+if [[ "$DB_ENGINE" == sqlite* ]]; then
+    USE_SQLITE=true
+else
+    USE_SQLITE=false
+fi
+
 # Функция для ожидания готовности базы данных
 wait_for_db() {
-    echo "Ожидание готовности базы данных..."
+    # Если используется SQLite, проверка не нужна
+    if [ "$USE_SQLITE" = true ]; then
+        echo "Используется SQLite, проверка подключения не требуется."
+        return 0
+    fi
+    
+    echo "Ожидание готовности базы данных PostgreSQL..."
     max_attempts=30
     attempt=0
     

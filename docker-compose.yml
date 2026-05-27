@@ -11,6 +11,7 @@ services:
       POSTGRES_PASSWORD: corp_portal
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/pg_hba.conf:/docker-entrypoint-initdb.d/pg_hba.conf
     ports:
       - "5432:5432"
     healthcheck:
