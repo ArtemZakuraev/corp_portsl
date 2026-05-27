@@ -8,6 +8,14 @@ from django.conf import settings
 class SystemSetting(models.Model):
     """System-wide settings stored in database."""
     
+    # Основные настройки
+    SITE_URL = 'site_url'
+    MATTERMOST_URL = 'mattermost_url'
+    MATTERMOST_WEBHOOK_URL = 'mattermost_webhook_url'
+    MATTERMOST_BOT_TOKEN = 'mattermost_bot_token'
+    VERIFY_SSL = 'verify_ssl'
+    BACKGROUND_IMAGE_URL = 'background_image_url'
+    
     key = models.CharField(max_length=100, unique=True, verbose_name=_('Ключ'))
     value = models.TextField(verbose_name=_('Значение'))
     description = models.TextField(blank=True, verbose_name=_('Описание'))
@@ -26,7 +34,7 @@ class SystemSetting(models.Model):
         verbose_name_plural = _('Системные настройки')
     
     def __str__(self):
-        return f"{self.key}: {self.value[:50]}"
+        return f"{self.key}: {self.value[:50] if self.value else ''}"
     
     @classmethod
     def get_value(cls, key, default=None):
@@ -43,12 +51,43 @@ class SystemSetting(models.Model):
         setting, created = cls.objects.update_or_create(
             key=key,
             defaults={
-                'value': value,
+                'value': str(value),
                 'description': description,
                 'updated_by': user
             }
         )
         return setting
+    
+    @classmethod
+    def get_mattermost_url(cls):
+        """Get Mattermost server URL."""
+        return cls.get_value(cls.MATTERMOST_URL, '')
+    
+    @classmethod
+    def get_mattermost_webhook_url(cls):
+        """Get Mattermost webhook URL."""
+        return cls.get_value(cls.MATTERMOST_WEBHOOK_URL, '')
+    
+    @classmethod
+    def get_mattermost_bot_token(cls):
+        """Get Mattermost bot token."""
+        return cls.get_value(cls.MATTERMOST_BOT_TOKEN, '')
+    
+    @classmethod
+    def is_ssl_verification_enabled(cls):
+        """Check if SSL verification is enabled."""
+        value = cls.get_value(cls.VERIFY_SSL, 'True')
+        return value.lower() in ('true', '1', 'yes')
+    
+    @classmethod
+    def get_site_url(cls):
+        """Get site public URL."""
+        return cls.get_value(cls.SITE_URL, 'http://localhost:8000')
+    
+    @classmethod
+    def get_background_image_url(cls):
+        """Get background image URL."""
+        return cls.get_value(cls.BACKGROUND_IMAGE_URL, '')
 
 
 class MattermostProfile(models.Model):
