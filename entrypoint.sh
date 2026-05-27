@@ -77,37 +77,32 @@ echo "=========================================="
 echo "Применение миграций базы данных..."
 echo "=========================================="
 
-# Проверяем, есть ли непримененные миграции, и применяем их
-echo "Проверка наличия непримененных миграций..."
-if python manage.py showmigrations --list 2>/dev/null | grep -q "\[ \]"; then
-    echo "Обнаружены непримененные миграции. Применяем..."
+# Всегда применяем миграции принудительно (независимо от showmigrations)
+echo "Принудительное применение миграций..."
+
+# Применяем миграции с несколькими попытками
+max_migrate_attempts=3
+migrate_attempt=0
+migration_success=false
+
+while [ $migrate_attempt -lt $max_migrate_attempts ]; do
+    migrate_attempt=$((migrate_attempt + 1))
+    echo "Попытка применения миграций: $migrate_attempt/$max_migrate_attempts"
     
-    # Применяем миграции с несколькими попытками
-    max_migrate_attempts=3
-    migrate_attempt=0
-    migration_success=false
-
-    while [ $migrate_attempt -lt $max_migrate_attempts ]; do
-        migrate_attempt=$((migrate_attempt + 1))
-        echo "Попытка применения миграций: $migrate_attempt/$max_migrate_attempts"
-        
-        if python manage.py migrate --noinput --verbosity=1; then
-            echo "✓ Миграции успешно применены!"
-            migration_success=true
-            break
-        else
-            echo "⚠ Попытка $migrate_attempt не удалась, повторная попытка через 2 секунды..."
-            sleep 2
-        fi
-    done
-
-    if [ "$migration_success" = false ]; then
-        echo "✗ ОШИБКА: Не удалось применить миграции после $max_migrate_attempts попыток!"
-        echo "Проверьте логи выше для деталей."
-        exit 1
+    if python manage.py migrate --noinput --verbosity=1; then
+        echo "✓ Миграции успешно применены!"
+        migration_success=true
+        break
+    else
+        echo "⚠ Попытка $migrate_attempt не удалась, повторная попытка через 2 секунды..."
+        sleep 2
     fi
-else
-    echo "✓ Все миграции уже применены или миграции отсутствуют."
+done
+
+if [ "$migration_success" = false ]; then
+    echo "✗ ОШИБКА: Не удалось применить миграции после $max_migrate_attempts попыток!"
+    echo "Проверьте логи выше для деталей."
+    exit 1
 fi
 
 # Создаем администратора (если нужно)
